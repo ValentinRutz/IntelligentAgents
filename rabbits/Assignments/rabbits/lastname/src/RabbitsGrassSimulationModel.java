@@ -31,22 +31,22 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private static final int NBRABBITS = 5;
 	private static final int GRIDHEIGHT = 20;
 	private static final int GRIDWIDTH = 20;
-	private static final int BIRTHTHRESHOLD = 20;
+	private static final int BIRTHTHRESHOLD = 5;
 	private static final int GRASSGROWTHRATE = 10;
 
 	// User modifiable parameters
-	private int nbRabbits = NBRABBITS;
-	private int gridHeight = GRIDHEIGHT;
-	private int gridWidth = GRIDWIDTH;
-	private int birthThreshold = BIRTHTHRESHOLD;
-	private int grassGrowthRate = GRASSGROWTHRATE;
+	private static int nbRabbits = NBRABBITS;
+	private static int gridHeight = GRIDHEIGHT;
+	private static int gridWidth = GRIDWIDTH;
+	private static int birthThreshold = BIRTHTHRESHOLD;
+	private static int grassGrowthRate = GRASSGROWTHRATE;
 
 	// Internal parameters
 	private static final int MOVECOST = 1;
-	private static final int REPRODUCTIONCOST = 10;
+	private static final int REPRODUCTIONCOST = 2;
 	private static final int GRASSENERGY = 1;
 	private static final int MAXGRASS = 100;
-	private static final int INITENERGY = 10;
+	private static final int INITENERGY = 8;
 
 	public static void main(String[] args) {
 
@@ -114,7 +114,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 					addNewAgent();
 				}
 				
-				rgsSpace.growGrass(5);
+				//TO-DO 
+				rgsSpace.growGrass(grassGrowthRate);
 
 				displaySurf.updateDisplay();
 			}

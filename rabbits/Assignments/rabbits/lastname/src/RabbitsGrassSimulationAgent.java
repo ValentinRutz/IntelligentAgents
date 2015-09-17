@@ -117,6 +117,6 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 	}
 
 	public void reproduce() {
-		energy -= RabbitsGrassSimulationModel.getReproductionCost();
+		energy /= RabbitsGrassSimulationModel.getReproductionCost();
 	}
 }
