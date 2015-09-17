@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import uchicago.src.sim.engine.BasicAction;
 import uchicago.src.sim.engine.Schedule;
@@ -27,11 +28,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private ArrayList<RabbitsGrassSimulationAgent> rabbitList;
 
 	// Default values for parameters
-	private static final int NBRABBITS = 1;
+	private static final int NBRABBITS = 5;
 	private static final int GRIDHEIGHT = 20;
 	private static final int GRIDWIDTH = 20;
 	private static final int BIRTHTHRESHOLD = 20;
-	private static final int GRASSGROWTHRATE = 1;
+	private static final int GRASSGROWTHRATE = 10;
 
 	// User modifiable parameters
 	private int nbRabbits = NBRABBITS;
@@ -45,7 +46,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private static final int REPRODUCTIONCOST = 10;
 	private static final int GRASSENERGY = 1;
 	private static final int MAXGRASS = 100;
-	private static final int INITENERGY = 20;
+	private static final int INITENERGY = 100;
 
 	public static void main(String[] args) {
 
@@ -83,12 +84,18 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		class RabbitsGrassSimulationStep extends BasicAction {
 			public void execute() {
 				SimUtilities.shuffle(rabbitList);
-				for (RabbitsGrassSimulationAgent rabbit : rabbitList) {
+				
+
+				
+				for (Iterator<RabbitsGrassSimulationAgent> it = rabbitList.iterator(); it.hasNext();) {
+					RabbitsGrassSimulationAgent rabbit = it.next();
 					rabbit.step();
 					int x = rabbit.getX(), y = rabbit.getY(), energy = rabbit.getEnergy();
 					// Check if agent should be dead
 					if (energy <= 0) {
 						rgsSpace.removeAgentAt(x, y);
+						it.remove();
+						//indicesToRemove.add(i);
 					} else {
 				    	// If not, eat grass
 						rabbit.increaseEnergyBy(rgsSpace.getEnergyAt(x, y));
@@ -100,6 +107,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 						
 					}
 				}
+				
+				
+				rgsSpace.growGrass(10);
 
 				displaySurf.updateDisplay();
 			}

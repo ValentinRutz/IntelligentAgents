@@ -91,9 +91,10 @@ public class RabbitsGrassSimulationSpace {
 	
 	public void moveAgent(int oldX, int oldY, int newX, int newY) {
 		RabbitsGrassSimulationAgent agent = getAgentAt(oldX, oldY);
-		agentSpace.putObjectAt(newX, newY, agent);
 		agent.setXY(newX, newY);
 		agent.decreaseEnergy();
+
+		agentSpace.putObjectAt(newX, newY, agent);
 		removeAgentAt(oldX, oldY);
 	}
 
