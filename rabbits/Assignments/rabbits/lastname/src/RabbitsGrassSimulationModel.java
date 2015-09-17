@@ -1,10 +1,15 @@
 import java.awt.Color;
+import java.util.ArrayList;
+
+import uchicago.src.sim.engine.BasicAction;
 import uchicago.src.sim.engine.Schedule;
-import uchicago.src.sim.engine.SimModelImpl;
 import uchicago.src.sim.engine.SimInit;
-import uchicago.src.sim.gui.DisplaySurface;
+import uchicago.src.sim.engine.SimModelImpl;
 import uchicago.src.sim.gui.ColorMap;
+import uchicago.src.sim.gui.DisplaySurface;
+import uchicago.src.sim.gui.Object2DDisplay;
 import uchicago.src.sim.gui.Value2DDisplay;
+import uchicago.src.sim.util.SimUtilities;
 
 /**
  * Class that implements the simulation model for the rabbits grass simulation.
@@ -19,12 +24,13 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private Schedule schedule;
 	private RabbitsGrassSimulationSpace rgsSpace;
 	private DisplaySurface displaySurf;
+	private ArrayList<RabbitsGrassSimulationAgent> rabbitList;
 
 	// Default values for parameters
 	private static final int NBRABBITS = 1;
 	private static final int GRIDHEIGHT = 20;
 	private static final int GRIDWIDTH = 20;
-	private static final int BIRTHTHRESHOLD = 1;
+	private static final int BIRTHTHRESHOLD = 20;
 	private static final int GRASSGROWTHRATE = 1;
 
 	// User modifiable parameters
@@ -36,9 +42,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 	// Internal parameters
 	private static final int MOVECOST = 1;
+	private static final int REPRODUCTIONCOST = 10;
 	private static final int GRASSENERGY = 1;
-	private static final int MAXGRASS = 1000;
-	
+	private static final int MAXGRASS = 100;
+	private static final int INITENERGY = 20;
+
 	public static void main(String[] args) {
 
 		// System.out.println("Rabbit skeleton");
@@ -52,19 +60,52 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		buildModel();
 		buildSchedule();
 		buildDisplay();
-		
-	    displaySurf.display();
+
+		displaySurf.display();
 	}
 
 	public void buildModel() {
 		System.out.println("Building model...");
 		rgsSpace = new RabbitsGrassSimulationSpace(gridWidth, gridHeight);
 		rgsSpace.growGrass(grassGrowthRate);
+
+		for (int i = 0; i < nbRabbits; i++) {
+			addNewAgent();
+		}
+		for (int i = 0; i < rabbitList.size(); i++) {
+			RabbitsGrassSimulationAgent cda = rabbitList.get(i);
+			cda.report();
+		}
 	}
 
 	public void buildSchedule() {
 		System.out.println("Building schedule...");
+		class RabbitsGrassSimulationStep extends BasicAction {
+			public void execute() {
+				SimUtilities.shuffle(rabbitList);
+				for (RabbitsGrassSimulationAgent rabbit : rabbitList) {
+					rabbit.step();
+					int x = rabbit.getX(), y = rabbit.getY(), energy = rabbit.getEnergy();
+					// Check if agent should be dead
+					if (energy <= 0) {
+						rgsSpace.removeAgentAt(x, y);
+					} else {
+				    	// If not, eat grass
+						rabbit.increaseEnergyBy(rgsSpace.getEnergyAt(x, y));
+				    	// Check if can reproduce
+						if (energy > getBirthThreshold()) {
+							rabbit.reproduce();
+							addNewAgent();
+						}
+						
+					}
+				}
 
+				displaySurf.updateDisplay();
+			}
+		}
+
+		schedule.scheduleActionBeginning(0, new RabbitsGrassSimulationStep());
 	}
 
 	public void buildDisplay() {
@@ -77,8 +118,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		}
 
 		Value2DDisplay displayGrass = new Value2DDisplay(rgsSpace.getCurrentGrassSpace(), map);
+		Object2DDisplay displayAgents = new Object2DDisplay(rgsSpace.getCurrentAgentSpace());
+		displayAgents.setObjectList(rabbitList);
 
 		displaySurf.addDisplayable(displayGrass, "Grass");
+		displaySurf.addDisplayable(displayAgents, "Agents");
 
 	}
 
@@ -93,6 +137,12 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 	public Schedule getSchedule() {
 		return schedule;
+	}
+
+	private void addNewAgent() {
+		RabbitsGrassSimulationAgent a = new RabbitsGrassSimulationAgent(INITENERGY);
+		rabbitList.add(a);
+		rgsSpace.addAgent(a);
 	}
 
 	public int getNbRabbits() {
@@ -138,6 +188,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	public void setup() {
 		System.out.println("Running setup...");
 		rgsSpace = null;
+		rabbitList = new ArrayList<RabbitsGrassSimulationAgent>();
+		schedule = new Schedule(1);
 
 		if (displaySurf != null) {
 			displaySurf.dispose();
@@ -159,5 +211,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 	public static int getMaxGrass() {
 		return MAXGRASS;
+	}
+	
+	public static int getReproductionCost() {
+		return REPRODUCTIONCOST;
 	}
 }
