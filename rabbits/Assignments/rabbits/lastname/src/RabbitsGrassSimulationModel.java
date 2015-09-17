@@ -46,7 +46,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private static final int REPRODUCTIONCOST = 10;
 	private static final int GRASSENERGY = 1;
 	private static final int MAXGRASS = 100;
-	private static final int INITENERGY = 100;
+	private static final int INITENERGY = 10;
 
 	public static void main(String[] args) {
 
@@ -86,7 +86,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 				SimUtilities.shuffle(rabbitList);
 				
 
-				
+				int newborns=0;
 				for (Iterator<RabbitsGrassSimulationAgent> it = rabbitList.iterator(); it.hasNext();) {
 					RabbitsGrassSimulationAgent rabbit = it.next();
 					rabbit.step();
@@ -99,17 +99,22 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 					} else {
 				    	// If not, eat grass
 						rabbit.increaseEnergyBy(rgsSpace.getEnergyAt(x, y));
+						rgsSpace.getCurrentGrassSpace().putObjectAt(x, y, new Integer(0));
 				    	// Check if can reproduce
 						if (energy > getBirthThreshold()) {
 							rabbit.reproduce();
-							addNewAgent();
+							newborns++;
+							//addNewAgent();
 						}
 						
 					}
 				}
 				
+				for (int i = 0; i < newborns; i++) {
+					addNewAgent();
+				}
 				
-				rgsSpace.growGrass(10);
+				rgsSpace.growGrass(5);
 
 				displaySurf.updateDisplay();
 			}
