@@ -59,6 +59,7 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 	}
 
 	public void step() {
+		live();
 		// Get all neighboring cells
 		int[][] neighbors = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
 
@@ -88,8 +89,12 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 			rgsSpace.moveAgent(x, y, newX, newY);
 	}
 
-	public void decreaseEnergy() {
+	public void move() {
 		energy -= RabbitsGrassSimulationModel.getMoveCost();
+	}
+	
+	public void live() {
+		energy -= RabbitsGrassSimulationModel.getLivingCost();
 	}
 
 	public void increaseEnergyBy(int energyAt) {

@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import uchicago.src.reflector.RangePropertyDescriptor;
 import uchicago.src.sim.analysis.DataSource;
 import uchicago.src.sim.analysis.OpenSequenceGraph;
 import uchicago.src.sim.analysis.Sequence;
@@ -35,7 +36,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private static final int NBRABBITS = 5;
 	private static final int GRIDHEIGHT = 20;
 	private static final int GRIDWIDTH = 20;
-	private static final int BIRTHTHRESHOLD = 9;
+	private static final int BIRTHTHRESHOLD = 18;
 	private static final int GRASSGROWTHRATE = 15;
 
 	// User modifiable parameters
@@ -47,11 +48,13 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 	// Internal parameters
 	private static final int MOVECOST = 1;
-	private static final int REPRODUCTIONCOST = 3;
+	private static final int LIVINGCOST = 1;
+	private static int REPRODUCTIONCOST = BIRTHTHRESHOLD / 2;
 	private static final int GRASSENERGY = 3;
 	private static final int MAXGRASS = 100;
 	private static final int MAXENERGY = 100;
-	private static final int INITENERGY = 9;
+	private static int INITENERGY = BIRTHTHRESHOLD;
+	private RabbitsGrassSimulationModel self = this;
 
 	class NumberOfRabbits implements DataSource, Sequence {
 
@@ -103,6 +106,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 			public void execute() {
 				System.out.println("We have " + rabbitList.size() + " rabbits in the grid");
 				SimUtilities.shuffle(rabbitList);
+				if (rabbitList.size() == 0) {
+					self.stop();
+				}
 
 				int newborns = 0;
 				for (Iterator<RabbitsGrassSimulationAgent> it = rabbitList.iterator(); it.hasNext();) {
@@ -122,7 +128,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 						if (energy > getBirthThreshold()) {
 							rabbit.reproduce();
 							newborns++;
-							// addNewAgent();
 						}
 
 					}
@@ -184,8 +189,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 	private void addNewAgent() {
 		RabbitsGrassSimulationAgent a = new RabbitsGrassSimulationAgent(INITENERGY);
-		rabbitList.add(a);
-		rgsSpace.addAgent(a);
+		if(rgsSpace.addAgent(a)) {
+			rabbitList.add(a);
+		}
 	}
 
 	public int getNbRabbits() {
@@ -201,7 +207,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	}
 
 	public void setGridHeight(int gridHeight) {
-		RabbitsGrassSimulationModel.gridHeight = gridHeight;
+		if(gridHeight > 0)
+			RabbitsGrassSimulationModel.gridHeight = gridHeight;
 	}
 
 	public int getGridWidth() {
@@ -209,7 +216,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	}
 
 	public void setGridWidth(int gridWidth) {
-		RabbitsGrassSimulationModel.gridWidth = gridWidth;
+		if(gridWidth > 0)
+			RabbitsGrassSimulationModel.gridWidth = gridWidth;
 	}
 
 	public int getBirthThreshold() {
@@ -217,6 +225,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	}
 
 	public void setBirthThreshold(int birthThreshold) {
+		INITENERGY = birthThreshold;
+		REPRODUCTIONCOST = birthThreshold / 3;
 		RabbitsGrassSimulationModel.birthThreshold = birthThreshold;
 	}
 
@@ -228,8 +238,20 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		RabbitsGrassSimulationModel.grassGrowthRate = grassGrowthRate;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setup() {
 		System.out.println("Running setup...");
+		RangePropertyDescriptor rdNbRabbits = new RangePropertyDescriptor("NbRabbits", 0, GRIDHEIGHT * GRIDWIDTH, 100);
+		descriptors.put("NbRabbits", rdNbRabbits);
+		RangePropertyDescriptor rdGridHeight = new RangePropertyDescriptor("GridHeight", 0, 500, 100);
+		descriptors.put("GridHeight", rdGridHeight);
+		RangePropertyDescriptor rdGridWidth = new RangePropertyDescriptor("GridWidth", 0, 500, 100);
+		descriptors.put("GridWidth", rdGridWidth);
+		RangePropertyDescriptor rdBirthThreshold = new RangePropertyDescriptor("BirthThreshold", 0, 100, 20);
+		descriptors.put("BirthThreshold", rdBirthThreshold);
+		RangePropertyDescriptor rdGrassGrowthRate = new RangePropertyDescriptor("GrassGrowthRate", 0, 500, 100);
+		descriptors.put("GrassGrowthRate", rdGrassGrowthRate);
+		
 		rgsSpace = null;
 		rabbitList = new ArrayList<RabbitsGrassSimulationAgent>();
 		schedule = new Schedule(1);
@@ -270,5 +292,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 	public static int getReproductionCost() {
 		return REPRODUCTIONCOST;
+	}
+
+	public static int getLivingCost() {
+		return LIVINGCOST;
 	}
 }

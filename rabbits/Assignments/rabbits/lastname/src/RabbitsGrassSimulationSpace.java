@@ -25,15 +25,18 @@ public class RabbitsGrassSimulationSpace {
 
 	public void growGrass(int rate) {
 		Random rand = new Random();
-		for (int i = 0; i < rate; i++) {
-			int x = rand.nextInt(grassSpace.getSizeX() - 1) + 1;
-			int y = rand.nextInt(grassSpace.getSizeY() - 1) + 1;
+		for (int i = 0, counter = 0, counterLimit = 10 * rate; i < rate && counter < counterLimit; i++, counter++) {
+			int x = rand.nextInt(grassSpace.getSizeX());
+			int y = rand.nextInt(grassSpace.getSizeY());
+			if (!isCellOccupied(x, y)) {
+				// Get the value of the object at those coordinates
+				int I = getEnergyAt(x, y);
 
-			// Get the value of the object at those coordinates
-			int I = getEnergyAt(x, y);
-
-			// Replace the Integer object with another one with the new value
-			grassSpace.putObjectAt(x, y, new Integer(I + RabbitsGrassSimulationModel.getGrassEnergy()));
+				// Replace the Integer object with another one with the new
+				// value
+				grassSpace.putObjectAt(x, y, new Integer(I + RabbitsGrassSimulationModel.getGrassEnergy()));
+				i--;
+			}
 		}
 	}
 
@@ -92,7 +95,7 @@ public class RabbitsGrassSimulationSpace {
 	public void moveAgent(int oldX, int oldY, int newX, int newY) {
 		RabbitsGrassSimulationAgent agent = getAgentAt(oldX, oldY);
 		agent.setXY(newX, newY);
-		agent.decreaseEnergy();
+		agent.move();
 
 		agentSpace.putObjectAt(newX, newY, agent);
 		removeAgentAt(oldX, oldY);
