@@ -65,7 +65,7 @@ public class RabbitsGrassSimulationSpace {
 		while ((agentAdded == false) && (count < countLimit)) {
 			int x = (int) (Math.random() * (agentSpace.getSizeX()));
 			int y = (int) (Math.random() * (agentSpace.getSizeY()));
-			if (isCellOccupied(x, y) == false) {
+			if (!isCellOccupied(x, y)) {
 				agentSpace.putObjectAt(x, y, agent);
 				agent.setXY(x, y);
 				agent.setSpace(this);
@@ -88,7 +88,7 @@ public class RabbitsGrassSimulationSpace {
 	public void removeAgentAt(int x, int y) {
 		agentSpace.putObjectAt(x, y, null);
 	}
-	
+
 	public void moveAgent(int oldX, int oldY, int newX, int newY) {
 		RabbitsGrassSimulationAgent agent = getAgentAt(oldX, oldY);
 		agent.setXY(newX, newY);

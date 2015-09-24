@@ -68,11 +68,12 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	public void buildModel() {
 		System.out.println("Building model...");
 		rgsSpace = new RabbitsGrassSimulationSpace(gridWidth, gridHeight);
-		rgsSpace.growGrass(grassGrowthRate);
+//		rgsSpace.growGrass(grassGrowthRate);
 
 		for (int i = 0; i < nbRabbits; i++) {
 			addNewAgent();
 		}
+		
 		for (int i = 0; i < rabbitList.size(); i++) {
 			RabbitsGrassSimulationAgent cda = rabbitList.get(i);
 			cda.report();
@@ -84,9 +85,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		class RabbitsGrassSimulationStep extends BasicAction {
 			public void execute() {
 				SimUtilities.shuffle(rabbitList);
-				
 
-				int newborns=0;
+				int newborns = 0;
 				for (Iterator<RabbitsGrassSimulationAgent> it = rabbitList.iterator(); it.hasNext();) {
 					RabbitsGrassSimulationAgent rabbit = it.next();
 					rabbit.step();
@@ -95,26 +95,25 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 					if (energy <= 0) {
 						rgsSpace.removeAgentAt(x, y);
 						it.remove();
-						//indicesToRemove.add(i);
+						// indicesToRemove.add(i);
 					} else {
-				    	// If not, eat grass
+						// If not, eat grass
 						rabbit.increaseEnergyBy(rgsSpace.getEnergyAt(x, y));
 						rgsSpace.getCurrentGrassSpace().putObjectAt(x, y, new Integer(0));
-				    	// Check if can reproduce
+						// Check if can reproduce
 						if (energy > getBirthThreshold()) {
 							rabbit.reproduce();
 							newborns++;
-							//addNewAgent();
+							// addNewAgent();
 						}
-						
+
 					}
 				}
-				
+
 				for (int i = 0; i < newborns; i++) {
 					addNewAgent();
 				}
-				
-				//TO-DO 
+
 				rgsSpace.growGrass(grassGrowthRate);
 
 				displaySurf.updateDisplay();
@@ -166,7 +165,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	}
 
 	public void setNbRabbits(int nbRabbits) {
-		this.nbRabbits = nbRabbits;
+		RabbitsGrassSimulationModel.nbRabbits = nbRabbits;
 	}
 
 	public int getGridHeight() {
@@ -174,7 +173,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	}
 
 	public void setGridHeight(int gridHeight) {
-		this.gridHeight = gridHeight;
+		RabbitsGrassSimulationModel.gridHeight = gridHeight;
 	}
 
 	public int getGridWidth() {
@@ -182,7 +181,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	}
 
 	public void setGridWidth(int gridWidth) {
-		this.gridWidth = gridWidth;
+		RabbitsGrassSimulationModel.gridWidth = gridWidth;
 	}
 
 	public int getBirthThreshold() {
@@ -190,7 +189,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	}
 
 	public void setBirthThreshold(int birthThreshold) {
-		this.birthThreshold = birthThreshold;
+		RabbitsGrassSimulationModel.birthThreshold = birthThreshold;
 	}
 
 	public int getGrassGrowthRate() {
@@ -198,7 +197,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	}
 
 	public void setGrassGrowthRate(int grassGrowthRate) {
-		this.grassGrowthRate = grassGrowthRate;
+		RabbitsGrassSimulationModel.grassGrowthRate = grassGrowthRate;
 	}
 
 	public void setup() {
@@ -228,7 +227,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	public static int getMaxGrass() {
 		return MAXGRASS;
 	}
-	
+
 	public static int getReproductionCost() {
 		return REPRODUCTIONCOST;
 	}
