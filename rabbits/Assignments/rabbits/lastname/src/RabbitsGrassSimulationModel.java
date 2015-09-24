@@ -2,6 +2,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import uchicago.src.sim.analysis.DataSource;
+import uchicago.src.sim.analysis.OpenSequenceGraph;
+import uchicago.src.sim.analysis.Sequence;
 import uchicago.src.sim.engine.BasicAction;
 import uchicago.src.sim.engine.Schedule;
 import uchicago.src.sim.engine.SimInit;
@@ -26,13 +29,14 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private RabbitsGrassSimulationSpace rgsSpace;
 	private DisplaySurface displaySurf;
 	private ArrayList<RabbitsGrassSimulationAgent> rabbitList;
+	private OpenSequenceGraph numberOfRabbits;
 
 	// Default values for parameters
 	private static final int NBRABBITS = 5;
 	private static final int GRIDHEIGHT = 20;
 	private static final int GRIDWIDTH = 20;
-	private static final int BIRTHTHRESHOLD = 5;
-	private static final int GRASSGROWTHRATE = 10;
+	private static final int BIRTHTHRESHOLD = 9;
+	private static final int GRASSGROWTHRATE = 15;
 
 	// User modifiable parameters
 	private static int nbRabbits = NBRABBITS;
@@ -43,10 +47,22 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 	// Internal parameters
 	private static final int MOVECOST = 1;
-	private static final int REPRODUCTIONCOST = 2;
-	private static final int GRASSENERGY = 1;
+	private static final int REPRODUCTIONCOST = 3;
+	private static final int GRASSENERGY = 3;
 	private static final int MAXGRASS = 100;
-	private static final int INITENERGY = 8;
+	private static final int MAXENERGY = 100;
+	private static final int INITENERGY = 9;
+
+	class NumberOfRabbits implements DataSource, Sequence {
+
+		public Object execute() {
+			return new Double(getSValue());
+		}
+
+		public double getSValue() {
+			return rabbitList.size();
+		}
+	}
 
 	public static void main(String[] args) {
 
@@ -63,17 +79,18 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		buildDisplay();
 
 		displaySurf.display();
+		numberOfRabbits.display();
 	}
 
 	public void buildModel() {
 		System.out.println("Building model...");
 		rgsSpace = new RabbitsGrassSimulationSpace(gridWidth, gridHeight);
-//		rgsSpace.growGrass(grassGrowthRate);
+		// rgsSpace.growGrass(grassGrowthRate);
 
 		for (int i = 0; i < nbRabbits; i++) {
 			addNewAgent();
 		}
-		
+
 		for (int i = 0; i < rabbitList.size(); i++) {
 			RabbitsGrassSimulationAgent cda = rabbitList.get(i);
 			cda.report();
@@ -84,6 +101,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		System.out.println("Building schedule...");
 		class RabbitsGrassSimulationStep extends BasicAction {
 			public void execute() {
+				System.out.println("We have " + rabbitList.size() + " rabbits in the grid");
 				SimUtilities.shuffle(rabbitList);
 
 				int newborns = 0;
@@ -120,7 +138,15 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 			}
 		}
 
-		schedule.scheduleActionBeginning(0, new RabbitsGrassSimulationStep());
+		schedule.scheduleActionBeginning(1, new RabbitsGrassSimulationStep());
+		
+		class RabbitsUpdateNumberOfRabbits extends BasicAction {
+		      public void execute(){
+		        numberOfRabbits.step();
+		      }
+		    }
+
+		    schedule.scheduleActionAtInterval(1, new RabbitsUpdateNumberOfRabbits());
 	}
 
 	public void buildDisplay() {
@@ -138,6 +164,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 		displaySurf.addDisplayable(displayGrass, "Grass");
 		displaySurf.addDisplayable(displayAgents, "Agents");
+		
+	    numberOfRabbits.addSequence("Rabbit", new NumberOfRabbits());
 
 	}
 
@@ -211,9 +239,17 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		}
 		displaySurf = null;
 
+		if (numberOfRabbits != null) {
+			numberOfRabbits.dispose();
+		}
+		numberOfRabbits = null;
+
 		displaySurf = new DisplaySurface(this, "Rabbits Grass Simulation Model Window 1");
+		numberOfRabbits = new OpenSequenceGraph("Number of rabbits",this);
 
 		registerDisplaySurface("Rabbits Grass Simulation Model Window 1", displaySurf);
+	    this.registerMediaProducer("Plot", numberOfRabbits);
+
 	}
 
 	public static int getMoveCost() {
@@ -226,6 +262,10 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 	public static int getMaxGrass() {
 		return MAXGRASS;
+	}
+
+	public static int getMaxEnergy() {
+		return MAXENERGY;
 	}
 
 	public static int getReproductionCost() {

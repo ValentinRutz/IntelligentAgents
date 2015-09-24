@@ -93,10 +93,14 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 	}
 
 	public void increaseEnergyBy(int energyAt) {
-		energy += energyAt;
+		if (energy + energyAt > RabbitsGrassSimulationModel.getMaxEnergy()) {
+			energy = RabbitsGrassSimulationModel.getMaxEnergy();
+		} else {
+			energy += energyAt;
+		}
 	}
 
 	public void reproduce() {
-		energy /= RabbitsGrassSimulationModel.getReproductionCost();
+		energy -= RabbitsGrassSimulationModel.getReproductionCost();
 	}
 }
