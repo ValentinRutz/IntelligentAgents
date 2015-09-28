@@ -255,7 +255,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
 	@SuppressWarnings("unchecked")
 	public void setup() {
-		System.out.println("Running setup...");
+//		System.out.println("Running setup...");
 		RangePropertyDescriptor rdNbRabbits = new RangePropertyDescriptor("NbRabbits", 0, GRIDHEIGHT * GRIDWIDTH, 100);
 		descriptors.put("NbRabbits", rdNbRabbits);
 		RangePropertyDescriptor rdGridHeight = new RangePropertyDescriptor("GridHeight", 0, 500, 100);
