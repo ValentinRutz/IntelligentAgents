@@ -30,7 +30,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private RabbitsGrassSimulationSpace rgsSpace;
 	private DisplaySurface displaySurf;
 	private ArrayList<RabbitsGrassSimulationAgent> rabbitList;
-	private OpenSequenceGraph numberOfRabbits;
+	private OpenSequenceGraph plot;
 
 	// Default values for parameters
 	private static final int NBRABBITS = 5;
@@ -66,14 +66,28 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 			return rabbitList.size();
 		}
 	}
+	
+	class AmountOfGrass implements DataSource, Sequence {
+		
+		public Object execute() {
+			return new Double(getSValue());
+		}
+
+		public double getSValue() {
+			double grassCount = 0;
+			for (int i = 0; i < gridWidth; i++) {
+				for (int j = 0; j < gridHeight; j++) {
+					grassCount += rgsSpace.getEnergyAt(i, j);
+				}
+			}
+			return grassCount;
+		}
+	}
 
 	public static void main(String[] args) {
-
-		// System.out.println("Rabbit skeleton");
 		SimInit init = new SimInit();
 		RabbitsGrassSimulationModel model = new RabbitsGrassSimulationModel();
 		init.loadModel(model, "", false);
-
 	}
 
 	public void begin() {
@@ -82,13 +96,12 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		buildDisplay();
 
 		displaySurf.display();
-		numberOfRabbits.display();
+		plot.display();
 	}
 
 	public void buildModel() {
 		System.out.println("Building model...");
 		rgsSpace = new RabbitsGrassSimulationSpace(gridWidth, gridHeight);
-		// rgsSpace.growGrass(grassGrowthRate);
 
 		for (int i = 0; i < nbRabbits; i++) {
 			addNewAgent();
@@ -113,23 +126,23 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 				int newborns = 0;
 				for (Iterator<RabbitsGrassSimulationAgent> it = rabbitList.iterator(); it.hasNext();) {
 					RabbitsGrassSimulationAgent rabbit = it.next();
+					// Move
 					rabbit.step();
 					int x = rabbit.getX(), y = rabbit.getY(), energy = rabbit.getEnergy();
+					// Eat grass
+					rabbit.increaseEnergyBy(rgsSpace.getEnergyAt(x, y) * GRASSENERGY);
+					rgsSpace.resetEnergyAt(x, y);
+					
 					// Check if agent should be dead
 					if (energy <= 0) {
 						rgsSpace.removeAgentAt(x, y);
 						it.remove();
-						// indicesToRemove.add(i);
 					} else {
-						// If not, eat grass
-						rabbit.increaseEnergyBy(rgsSpace.getEnergyAt(x, y));
-						rgsSpace.getCurrentGrassSpace().putObjectAt(x, y, new Integer(0));
 						// Check if can reproduce
 						if (energy > getBirthThreshold()) {
 							rabbit.reproduce();
 							newborns++;
 						}
-
 					}
 				}
 
@@ -147,11 +160,12 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		
 		class RabbitsUpdateNumberOfRabbits extends BasicAction {
 		      public void execute(){
-		        numberOfRabbits.step();
+		        plot.step();
 		      }
-		    }
+		}
 
-		    schedule.scheduleActionAtInterval(1, new RabbitsUpdateNumberOfRabbits());
+	    schedule.scheduleActionAtInterval(1, new RabbitsUpdateNumberOfRabbits());
+		
 	}
 
 	public void buildDisplay() {
@@ -170,7 +184,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		displaySurf.addDisplayable(displayGrass, "Grass");
 		displaySurf.addDisplayable(displayAgents, "Agents");
 		
-	    numberOfRabbits.addSequence("Rabbit", new NumberOfRabbits());
+	    plot.addSequence("Rabbit", new NumberOfRabbits());
+	    plot.addSequence("Grass", new AmountOfGrass(), Color.blue);
 
 	}
 
@@ -261,17 +276,16 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		}
 		displaySurf = null;
 
-		if (numberOfRabbits != null) {
-			numberOfRabbits.dispose();
+		if (plot != null) {
+			plot.dispose();
 		}
-		numberOfRabbits = null;
+		plot = null;
 
 		displaySurf = new DisplaySurface(this, "Rabbits Grass Simulation Model Window 1");
-		numberOfRabbits = new OpenSequenceGraph("Number of rabbits",this);
+		plot = new OpenSequenceGraph("Number of rabbits",this);
 
 		registerDisplaySurface("Rabbits Grass Simulation Model Window 1", displaySurf);
-	    this.registerMediaProducer("Plot", numberOfRabbits);
-
+	    this.registerMediaProducer("Plot", plot);
 	}
 
 	public static int getMoveCost() {

@@ -34,7 +34,7 @@ public class RabbitsGrassSimulationSpace {
 
 				// Replace the Integer object with another one with the new
 				// value
-				grassSpace.putObjectAt(x, y, new Integer(I + RabbitsGrassSimulationModel.getGrassEnergy()));
+				grassSpace.putObjectAt(x, y, new Integer(I + 1));
 				i--;
 			}
 		}
@@ -46,6 +46,10 @@ public class RabbitsGrassSimulationSpace {
 		} else {
 			return 0;
 		}
+	}
+	
+	public void resetEnergyAt(int x, int y) {
+		grassSpace.putObjectAt(x, y, new Integer(0));
 	}
 
 	public Object2DGrid getCurrentGrassSpace() {
