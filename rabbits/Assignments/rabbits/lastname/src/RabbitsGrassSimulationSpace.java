@@ -76,6 +76,10 @@ public class RabbitsGrassSimulationSpace {
 				agentSpace.putObjectAt(x, y, agent);
 				agent.setXY(x, y);
 				agent.setSpace(this);
+				agent.increaseEnergyBy(getEnergyAt(x, y) * RabbitsGrassSimulationModel.getGrassEnergy());
+				resetEnergyAt(x, y);
+				
+				
 				agentAdded = true;
 			}
 			count++;
