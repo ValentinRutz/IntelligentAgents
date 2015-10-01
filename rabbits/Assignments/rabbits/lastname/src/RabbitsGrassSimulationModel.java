@@ -50,7 +50,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	private static final int MOVECOST = 1;
 	private static final int LIVINGCOST = 1;
 	private static final int REPRODUCTIONCOST = 10;
-	private static final int GRASSENERGY = 1;
+	private static final int GRASSENERGY = 3;
 	private static final int MAXGRASS = 100;
 	private static final int MAXENERGY = 100;
 	private static final int INITENERGY = 10;
@@ -123,7 +123,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 					self.stop();
 				}
 
-				//int newborns = 0;
 				ArrayList<RabbitsGrassSimulationAgent> tmpRabbitList = new ArrayList<RabbitsGrassSimulationAgent>();
 				for (Iterator<RabbitsGrassSimulationAgent> it = rabbitList.iterator(); it.hasNext();) {
 					RabbitsGrassSimulationAgent rabbit = it.next();
@@ -143,7 +142,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 						if (energy > getBirthThreshold()) {
 							rabbit.reproduce();
 							addNewAgent(tmpRabbitList);
-							//newborns++;
 						}
 					}
 				}
@@ -152,9 +150,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 					rabbitList.add(agent);
 				}
 				tmpRabbitList.clear();
-				//for (int i = 0; i < newborns; i++) {
-				//	addNewAgent();
-				//}
+				
 
 				rgsSpace.growGrass(grassGrowthRate);
 
