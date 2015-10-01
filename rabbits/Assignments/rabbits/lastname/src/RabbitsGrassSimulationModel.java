@@ -49,11 +49,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	// Internal parameters
 	private static final int MOVECOST = 1;
 	private static final int LIVINGCOST = 1;
-	private static int REPRODUCTIONCOST = BIRTHTHRESHOLD / 2;
-	private static final int GRASSENERGY = 3;
+	private static final int REPRODUCTIONCOST = 10;
+	private static final int GRASSENERGY = 1;
 	private static final int MAXGRASS = 100;
 	private static final int MAXENERGY = 100;
-	private static int INITENERGY = BIRTHTHRESHOLD;
+	private static final int INITENERGY = 10;
 	private RabbitsGrassSimulationModel self = this;
 
 	class NumberOfRabbits implements DataSource, Sequence {
@@ -123,7 +123,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 					self.stop();
 				}
 
-				int newborns = 0;
+				//int newborns = 0;
+				ArrayList<RabbitsGrassSimulationAgent> tmpRabbitList = new ArrayList<RabbitsGrassSimulationAgent>();
 				for (Iterator<RabbitsGrassSimulationAgent> it = rabbitList.iterator(); it.hasNext();) {
 					RabbitsGrassSimulationAgent rabbit = it.next();
 					// Move
@@ -141,14 +142,19 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 						// Check if can reproduce
 						if (energy > getBirthThreshold()) {
 							rabbit.reproduce();
-							newborns++;
+							addNewAgent(tmpRabbitList);
+							//newborns++;
 						}
 					}
 				}
-
-				for (int i = 0; i < newborns; i++) {
-					addNewAgent();
+				
+				for (RabbitsGrassSimulationAgent agent : tmpRabbitList) {
+					rabbitList.add(agent);
 				}
+				tmpRabbitList.clear();
+				//for (int i = 0; i < newborns; i++) {
+				//	addNewAgent();
+				//}
 
 				rgsSpace.growGrass(grassGrowthRate);
 
@@ -202,6 +208,12 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 		return schedule;
 	}
 
+	private void addNewAgent(ArrayList<RabbitsGrassSimulationAgent> tmpRabbitList) {
+		RabbitsGrassSimulationAgent a = new RabbitsGrassSimulationAgent(INITENERGY);
+		if(rgsSpace.addAgent(a)) {
+			tmpRabbitList.add(a);
+		}
+	}
 	private void addNewAgent() {
 		RabbitsGrassSimulationAgent a = new RabbitsGrassSimulationAgent(INITENERGY);
 		if(rgsSpace.addAgent(a)) {
@@ -240,8 +252,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 	}
 
 	public void setBirthThreshold(int birthThreshold) {
-		INITENERGY = birthThreshold;
-		REPRODUCTIONCOST = birthThreshold / 3;
+		//INITENERGY = birthThreshold;
+		//REPRODUCTIONCOST = birthThreshold / 3;
 		RabbitsGrassSimulationModel.birthThreshold = birthThreshold;
 	}
 
