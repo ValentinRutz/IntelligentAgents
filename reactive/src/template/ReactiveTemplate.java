@@ -24,7 +24,6 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private Map<RKey, Double> R;
 	private Map<TKey, Double> T;
 
-	@Override
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
 
 		// Reads the discount factor from the agents.xml file.
@@ -39,26 +38,41 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		this.pricePerKm = agent.readProperty("price-per-km", Double.class, 1.d);
 		
 		// TODO: Initialize R(a, s) and T(s, a, s')
+		// Initialize R(a, s)
 		for (Actions a : Actions.values()) {
 			for (City from : topology.cities()) {
 				if(a == Actions.MOVETO) {
 					for (City neighbor : from.neighbors()) {
 						for (City genPackage: topology.cities()) {
-							R.put(new RKey(new State(from, neighbor, genPackage), a), - from.distanceTo(neighbor) * pricePerKm);
+							if(from.id != genPackage.id && genPackage.id != neighbor.id)
+								R.put(new RKey(new State(from, neighbor, genPackage), a), - from.distanceTo(neighbor) * pricePerKm);
 						}
 						R.put(new RKey(new State(from, neighbor, null), a), - from.distanceTo(neighbor) * pricePerKm);
 					}
 				} else if(a == Actions.PICKUP) {
 					for (City to : topology.cities()) {
-						R.put(new RKey(new State(from,  to, to), a), td.reward(from, to) - from.distanceTo(to) * pricePerKm);
+						if(from.id != to.id)
+							R.put(new RKey(new State(from,  to, to), a), td.reward(from, to) - from.distanceTo(to) * pricePerKm);
 					}
 				}
 				
 			}
 		}
+		
+		// Initialize T(s, a, s')
+		for (Actions a : Actions.values()) {
+			for (City fromStart : topology.cities()) {
+				for (City fromEnd : topology.cities()) {
+					for (City toStart : topology.cities()) {
+						for (City toEnd : topology.cities()) {
+							
+						}
+					}
+				}
+			}
+		}
 	}
 
-	@Override
 	public Action act(Vehicle vehicle, Task availableTask) {
 		Action action;
 
