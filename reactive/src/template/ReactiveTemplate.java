@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 
 import logist.agent.Agent;
 import logist.behavior.ReactiveBehavior;
@@ -49,6 +50,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			for (City genPackage : topology.cities()) {
 				S.add(new State(start, genPackage));
 			}
+			S.add(new State(start,null));
 		}
 		// Initialize A
 		for (City city : topology.cities()) {
@@ -58,12 +60,9 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		// Initialize R(a, s)
 		for (Actions a: A) {
 			for (State s: S) {
-				if (s.genPackage == null || (s.from.hasNeighbor(a.city) && !s.genPackage.equals(a.city))) {
+				if (s.from.hasNeighbor(a.city) && !a.city.equals(s.genPackage)) {
 					R.put(new RKey(s, a), - s.from.distanceTo(a.city) * pricePerKm);
-				} else {
-					R.put(new RKey(s, a), Double.MIN_VALUE);
-				}
-				if (s.genPackage != null) {
+				} else if (s.genPackage != null && a.city.equals(s.genPackage)) {
 					R.put(new RKey(s, a), td.reward(s.from, a.city) - s.from.distanceTo(a.city) * pricePerKm);
 				} else {
 					R.put(new RKey(s, a), Double.MIN_VALUE);
@@ -76,8 +75,8 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			for (State from : S) {
 				for (State to : S) {
 					if(from.genPackage != null && a.city.equals(from.genPackage) && from.genPackage.equals(to.from)) {
-						T.put(new TKey(from, a, to), td.probability(from.from, to.from));
-					} else if(!a.city.equals(from.genPackage) && from.from.hasNeighbor(to.from) && !from.from.neighbors().isEmpty()) {
+						T.put(new TKey(from, a, to), td.probability(from.from, from.genPackage));
+					} else if(!a.city.equals(from.genPackage) && from.from.hasNeighbor(to.from) && a.city.equals(to.from)) {
 						T.put(new TKey(from, a, to), 1.d/from.from.neighbors().size());
 					} else {
 						T.put(new TKey(from, a, to), 0.d);
@@ -93,35 +92,32 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			}
 		}
 		
-		Map<RKey, Double> Q = new HashMap<RKey, Double>();
+		//TreeMap<RKey, Double> Q = new TreeMap<RKey, Double>();
 		// Until "good enough" learn V(s)
-//		int i = 0;
-//		while(i < 10000) {
-//			for (State s : S) {
-//				for (Actions a : A) {
-//					RKey k = new RKey(s, a);
-//					double sum = 0;
-//					for (State otherS : S) {
-//						if(!T.containsKey(new TKey(s, a, otherS))) {
-//							System.out.println("T is not complete!!!");
-//							break;
-//						}
-//						sum += (T.get(new TKey(s, a, otherS))
-//								* V.get(otherS).getReward());
-//					}
-//					if(!R.containsKey(k)) {
-//						System.out.println("R is not complete!!!");
-//						break;
-//					}
-//					Q.put(k, R.get(k) + discount * sum);
-//				}
-//				double pickup = Q.get(new RKey(s, Actions.PICKUP));
-//				double moveto = Q.get(new RKey(s, Actions.MOVETO));
-//				
-//				V.put(s, (pickup >= moveto)? new VValue(pickup, Actions.PICKUP) : new VValue(moveto, Actions.MOVETO));
-//			}
-//			i++;
-//		}
+		int i = 0;
+		while(i < 100000) {
+			for (State state : S) {
+				Actions bestAction = null;
+				Double bestCurrentValue = Double.MIN_VALUE;
+				for (Actions action : A) {
+					RKey key = new RKey(state, action);
+					double sum=0;
+					for (State destination : S) {
+						sum+= T.get(new TKey(state, action, destination))*V.get(destination).getReward();
+					}
+					double value = discount*sum + R.get(key);
+					if(value >= bestCurrentValue){
+						bestCurrentValue=value;
+						bestAction = action;
+					}
+					//Q.put(key,value);
+				}
+				
+				V.put(state, new VValue(bestCurrentValue, bestAction));
+			}
+			
+			i++;
+		}
 	}
 
 	public Action act(Vehicle vehicle, Task availableTask) {
@@ -186,7 +182,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				return false;
 			}
 			RKey otherKey = (RKey) other;
-			return otherKey.a == this.a && otherKey.s.equals(this.s);
+			return otherKey.a.equals(this.a) && otherKey.s.equals(this.s);
 		}
 	}
 
@@ -206,7 +202,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				return false;
 			}
 			TKey otherKey = (TKey) other;
-			return otherKey.a == this.a && otherKey.start.equals(this.start) && otherKey.end.equals(this.end);
+			return otherKey.a.equals(this.a) && otherKey.start.equals(this.start) && otherKey.end.equals(this.end);
 		}
 	}
 	
