@@ -37,12 +37,23 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		this.R = new HashMap<RKey, Double>();
 		this.T = new HashMap<TKey, Double>();
 		this.pricePerKm = agent.readProperty("price-per-km", Double.class, 1.d);
+		
 		// TODO: Initialize R(a, s) and T(s, a, s')
 		for (Actions a : Actions.values()) {
 			for (City from : topology.cities()) {
-				for (City to : topology.cities()) {
-					R.put(new RKey(new State(from, to), a), from.distanceTo(to) * pricePerKm);
+				if(a == Actions.MOVETO) {
+					for (City neighbor : from.neighbors()) {
+						for (City genPackage: topology.cities()) {
+							R.put(new RKey(new State(from, neighbor, genPackage), a), - from.distanceTo(neighbor) * pricePerKm);
+						}
+						R.put(new RKey(new State(from, neighbor, null), a), - from.distanceTo(neighbor) * pricePerKm);
+					}
+				} else if(a == Actions.PICKUP) {
+					for (City to : topology.cities()) {
+						R.put(new RKey(new State(from,  to, to), a), td.reward(from, to) - from.distanceTo(to) * pricePerKm);
+					}
 				}
+				
 			}
 		}
 	}
@@ -50,8 +61,6 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	@Override
 	public Action act(Vehicle vehicle, Task availableTask) {
 		Action action;
-		double distanceToDelivery = availableTask.pickupCity.distanceTo(availableTask.deliveryCity);
-		double priceOfDelivery = distanceToDelivery * pricePerKm;
 
 		if (availableTask == null || random.nextDouble() > pPickup) {
 			City currentCity = vehicle.getCurrentCity();
@@ -62,16 +71,17 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		return action;
 	}
 	
-	private enum Actions {
-		PICKUP, MOVETO
-	}
+	
+	// Model
+	private enum Actions { PICKUP, MOVETO; }
 	
 	private class State {
-		City from, to;
+		City from, to, genPackage;
 		
-		public State(City from, City to) {
+		public State(City from, City to, City genPackage) {
 			this.from = from;
 			this.to = to;
+			this.genPackage = genPackage;
 		}
 	}
 
