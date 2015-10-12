@@ -164,7 +164,6 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	private class RKey {
 		private State s;
 		private Actions a;
@@ -184,7 +183,6 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	private class TKey {
 		private State start, end;
 		private Actions a;
@@ -216,6 +214,16 @@ public class ReactiveTemplate implements ReactiveBehavior {
 
 		public Double getReward() {
 			return reward;
+		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if(!(other instanceof VValue)) {
+				return false;
+			}
+			
+			VValue otherVValue = (VValue) other;
+			return otherVValue.a == this.a && otherVValue.reward == this.reward;
 		}
 	}
 }
