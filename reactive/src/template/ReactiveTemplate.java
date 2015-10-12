@@ -49,7 +49,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				for (City genPackage : topology.cities()) {
 					S.add(new State(start, end, genPackage));
 				}
-				
+				S.add(new State(start, end, null));
 			}
 		}
 		
@@ -59,14 +59,14 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				if(a == Actions.MOVETO) {
 					for (City neighbor : from.neighbors()) {
 						for (City genPackage: topology.cities()) {
-							if(from.id != genPackage.id && genPackage.id != neighbor.id)
+							if(!from.equals(genPackage) && genPackage.equals(neighbor))
 								R.put(new RKey(new State(from, neighbor, genPackage), a), - from.distanceTo(neighbor) * pricePerKm);
 						}
 						R.put(new RKey(new State(from, neighbor, null), a), - from.distanceTo(neighbor) * pricePerKm);
 					}
 				} else if(a == Actions.PICKUP) {
 					for (City to : topology.cities()) {
-						if(from.id != to.id)
+						if(!from.equals(to))
 							R.put(new RKey(new State(from,  to, to), a), td.reward(from, to) - from.distanceTo(to) * pricePerKm);
 					}
 				}
@@ -78,11 +78,11 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		for (Actions a : actions) {
 			for (State from : S) {
 				for (State to : S) {
-					if(a == Actions.PICKUP && from.to.id == to.from.id) {
+					if(a == Actions.PICKUP && from.to.equals(to.from) && from.genPackage != null &&
+							from.genPackage.equals(to.from) && from.genPackage.equals(from.to)) {
 						T.put(new TKey(from, a, to), td.probability(from.from, to.from));
 					} else if(a == Actions.MOVETO && from.from.hasNeighbor(to.from) &&
-							from.to.id == to.from.id && !from.from.neighbors().isEmpty() &&
-							from.genPackage.id == to.from.id && from.genPackage.id == from.to.id) {
+							from.to.equals(to.from) && !from.from.neighbors().isEmpty()) {
 						T.put(new TKey(from, a, to), 1.d/from.from.neighbors().size());
 					} else {
 						T.put(new TKey(from, a, to), 0.d);
@@ -153,6 +153,15 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			this.to = to;
 			this.genPackage = genPackage;
 		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if(!(other instanceof State)) {
+				return false;
+			}
+			State otherState = (State) other;
+			return otherState.from.equals(this.from) && otherState.to.equals(this.to) && otherState.genPackage.equals(this.genPackage);
+		}
 	}
 
 	@SuppressWarnings("unused")
@@ -163,6 +172,15 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		public RKey(State s, Actions a) {
 			this.s = s;
 			this.a = a;
+		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if(!(other instanceof RKey)) {
+				return false;
+			}
+			RKey otherKey = (RKey) other;
+			return otherKey.a == this.a && otherKey.s.equals(this.s);
 		}
 	}
 
@@ -175,6 +193,15 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			this.start = start;
 			this.a = a;
 			this.end = end;
+		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if(!(other instanceof TKey)) {
+				return false;
+			}
+			TKey otherKey = (TKey) other;
+			return otherKey.a == this.a && otherKey.start.equals(this.start) && otherKey.end.equals(this.end);
 		}
 	}
 	
