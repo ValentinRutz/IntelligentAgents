@@ -26,6 +26,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private Map<RKey, Double> R;
 	private Map<TKey, Double> T;
 	private Map<State, VValue> V;
+	private Set<Actions> A;
 
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
 
@@ -35,7 +36,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 
 		this.random = new Random();
 		this.pPickup = discount;
-		Actions[] actions = Actions.values();
+		this.A = new HashSet<Actions>();
 		
 		this.R = new HashMap<RKey, Double>();
 		this.T = new HashMap<TKey, Double>();
@@ -45,44 +46,38 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		
 		// Initialize S
 		for (City start : topology.cities()) {
-			for (City end : topology.cities()) {
-				for (City genPackage : topology.cities()) {
-					S.add(new State(start, end, genPackage));
-				}
-				S.add(new State(start, end, null));
+			for (City genPackage : topology.cities()) {
+				S.add(new State(start, genPackage));
 			}
+		}
+		// Initialize A
+		for (City city : topology.cities()) {
+			A.add(new Actions(city));
 		}
 		
 		// Initialize R(a, s)
-		for (Actions a : actions) {
-			for (City from : topology.cities()) {
-				if(a == Actions.MOVETO) {
-					for (City neighbor : from.neighbors()) {
-						for (City genPackage: topology.cities()) {
-							if(!from.equals(genPackage) && genPackage.equals(neighbor))
-								R.put(new RKey(new State(from, neighbor, genPackage), a), - from.distanceTo(neighbor) * pricePerKm);
-						}
-						R.put(new RKey(new State(from, neighbor, null), a), - from.distanceTo(neighbor) * pricePerKm);
-					}
-				} else if(a == Actions.PICKUP) {
-					for (City to : topology.cities()) {
-						if(!from.equals(to))
-							R.put(new RKey(new State(from,  to, to), a), td.reward(from, to) - from.distanceTo(to) * pricePerKm);
-					}
+		for (Actions a: A) {
+			for (State s: S) {
+				if (s.genPackage == null || (s.from.hasNeighbor(a.city) && !s.genPackage.equals(a.city))) {
+					R.put(new RKey(s, a), - s.from.distanceTo(a.city) * pricePerKm);
+				} else {
+					R.put(new RKey(s, a), Double.MIN_VALUE);
 				}
-				
+				if (s.genPackage != null) {
+					R.put(new RKey(s, a), td.reward(s.from, a.city) - s.from.distanceTo(a.city) * pricePerKm);
+				} else {
+					R.put(new RKey(s, a), Double.MIN_VALUE);
+				}
 			}
 		}
 		
 		// Initialize T(s, a, s')
-		for (Actions a : actions) {
+		for (Actions a : A) {
 			for (State from : S) {
 				for (State to : S) {
-					if(a == Actions.PICKUP && from.to.equals(to.from) && from.genPackage != null &&
-							from.genPackage.equals(to.from) && from.genPackage.equals(from.to)) {
+					if(from.genPackage != null && a.city.equals(from.genPackage) && from.genPackage.equals(to.from)) {
 						T.put(new TKey(from, a, to), td.probability(from.from, to.from));
-					} else if(a == Actions.MOVETO && from.from.hasNeighbor(to.from) &&
-							from.to.equals(to.from) && !from.from.neighbors().isEmpty()) {
+					} else if(!a.city.equals(from.genPackage) && from.from.hasNeighbor(to.from) && !from.from.neighbors().isEmpty()) {
 						T.put(new TKey(from, a, to), 1.d/from.from.neighbors().size());
 					} else {
 						T.put(new TKey(from, a, to), 0.d);
@@ -92,7 +87,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		}
 		
 		// Initialize V(s) with  stupid values
-		for (Actions a : actions) {
+		for (Actions a : A) {
 			for (State s : S) {
 				V.put(s, new VValue(1.d, a));
 			}
@@ -100,33 +95,33 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		
 		Map<RKey, Double> Q = new HashMap<RKey, Double>();
 		// Until "good enough" learn V(s)
-		int i = 0;
-		while(i < 10000) {
-			for (State s : S) {
-				for (Actions a : actions) {
-					RKey k = new RKey(s, a);
-					double sum = 0;
-					for (State otherS : S) {
-						if(!T.containsKey(new TKey(s, a, otherS))) {
-							System.out.println("T is not complete!!!");
-							break;
-						}
-						sum += (T.get(new TKey(s, a, otherS))
-								* V.get(otherS).getReward());
-					}
-					if(!R.containsKey(k)) {
-						System.out.println("R is not complete!!!");
-						break;
-					}
-					Q.put(k, R.get(k) + discount * sum);
-				}
-				double pickup = Q.get(new RKey(s, Actions.PICKUP));
-				double moveto = Q.get(new RKey(s, Actions.MOVETO));
-				
-				V.put(s, (pickup >= moveto)? new VValue(pickup, Actions.PICKUP) : new VValue(moveto, Actions.MOVETO));
-			}
-			i++;
-		}
+//		int i = 0;
+//		while(i < 10000) {
+//			for (State s : S) {
+//				for (Actions a : A) {
+//					RKey k = new RKey(s, a);
+//					double sum = 0;
+//					for (State otherS : S) {
+//						if(!T.containsKey(new TKey(s, a, otherS))) {
+//							System.out.println("T is not complete!!!");
+//							break;
+//						}
+//						sum += (T.get(new TKey(s, a, otherS))
+//								* V.get(otherS).getReward());
+//					}
+//					if(!R.containsKey(k)) {
+//						System.out.println("R is not complete!!!");
+//						break;
+//					}
+//					Q.put(k, R.get(k) + discount * sum);
+//				}
+//				double pickup = Q.get(new RKey(s, Actions.PICKUP));
+//				double moveto = Q.get(new RKey(s, Actions.MOVETO));
+//				
+//				V.put(s, (pickup >= moveto)? new VValue(pickup, Actions.PICKUP) : new VValue(moveto, Actions.MOVETO));
+//			}
+//			i++;
+//		}
 	}
 
 	public Action act(Vehicle vehicle, Task availableTask) {
@@ -143,14 +138,26 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	
 	
 	// Model
-	private enum Actions { PICKUP, MOVETO; }
+	private class Actions {
+		private City city;
+		
+		public Actions(City city) {
+			this.city = city;
+		}
+		
+		public boolean equals(Object other) {
+			if(!(other instanceof Actions)) {
+				return false;
+			}
+			return ((Actions) other).city.equals(this.city);
+		}
+	}
 	
 	private class State {
-		private City from, to, genPackage;
+		private City from, genPackage;
 		
-		public State(City from, City to, City genPackage) {
+		public State(City from, City genPackage) {
 			this.from = from;
-			this.to = to;
 			this.genPackage = genPackage;
 		}
 		
@@ -160,7 +167,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				return false;
 			}
 			State otherState = (State) other;
-			return otherState.from.equals(this.from) && otherState.to.equals(this.to) && otherState.genPackage.equals(this.genPackage);
+			return otherState.from.equals(this.from) && (this.genPackage.equals(otherState.genPackage));
 		}
 	}
 
