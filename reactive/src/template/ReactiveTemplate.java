@@ -33,7 +33,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 
 		// Reads the discount factor from the agents.xml file.
 		// If the property is not present it defaults to 0.95
-		Double discount = agent.readProperty("discount-factor", Double.class, 0.95);
+		Double discount = agent.readProperty("discount-factor", Double.class, 0.2);
 
 		this.random = new Random();
 		this.pPickup = discount;
@@ -56,7 +56,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		for (City city : topology.cities()) {
 			A.add(new Actions(city));
 		}
-		
+		//cout<<""
 		// Initialize R(a, s)
 		for (Actions a: A) {
 			for (State s: S) {
@@ -65,7 +65,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				} else if (s.genPackage != null && a.city.equals(s.genPackage)) {
 					R.put(new RKey(s, a), td.reward(s.from, a.city) - s.from.distanceTo(a.city) * pricePerKm);
 				} else {
-					R.put(new RKey(s, a), Double.MIN_VALUE);
+					R.put(new RKey(s, a), new Double(Integer.MIN_VALUE));
 				}
 				for (State to : S) {
 					if(s.genPackage != null && a.city.equals(s.genPackage) && s.genPackage.equals(to.from)) {
@@ -76,7 +76,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 						T.put(new TKey(s, a, to), 0.d);
 					}
 				}
-				V.put(s, new VValue(1.d, a));
+				
 			}
 		}
 		
@@ -96,11 +96,11 @@ public class ReactiveTemplate implements ReactiveBehavior {
 //		}
 		
 		// Initialize V(s) with  stupid values
-//		for (Actions a : A) {
-//			for (State s : S) {
-//				V.put(s, new VValue(1.d, a));
-//			}
-//		}
+		for (Actions a : A) {
+			for (State s : S) {
+				V.put(s, new VValue(1.d, a));
+			}
+		}
 		
 		Map<State, Boolean> change = new HashMap<State, Boolean>(V.size());
 		for (State state : S) {
@@ -111,30 +111,65 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		do {
 			for (State state : S) {
 				Actions bestAction = null;
-				Double bestCurrentValue = Double.MIN_VALUE;
+				Double bestCurrentValue = 0.0;
+				int k=0;
 				for (Actions action : A) {
 					RKey key = new RKey(state, action);
 					double sum=0;
 					for (State destination : S) {
+					//	System.out.println("V " + V.get(destination).getReward() + " T " + T.get(new TKey(state, action, destination)));
+						
+						
 						sum += T.get(new TKey(state, action, destination)) * V.get(destination).getReward();
 					}
+		//			System.out.println("Sum " + sum);
+		//			System.out.println("R " + R.get(key));
+					
+					
 					double value = discount*sum + R.get(key);
-					if(value >= bestCurrentValue){
+					
+					if(k==0){
+						bestCurrentValue=value;
+						bestAction = action;
+						k=1;
+					}else if(value >= bestCurrentValue){
 						bestCurrentValue=value;
 						bestAction = action;
 					}
 				}
-				if(Math.abs(V.get(state).reward - bestCurrentValue) < 0.001) {
+				/*
+				System.out.println("Value "+bestCurrentValue);
+				System.out.println(bestAction.city.toString());
+				System.out.println(state.from.toString());
+				System.out.println(state.genPackage.toString());
+				System.out.println(td.reward(state.from, state.genPackage));
+				*/
+
+				//break;
+			/*	if(Math.abs(V.get(state).reward - bestCurrentValue) < 0.00001) {
 					change.put(state, false);
-				} else {
-					V.put(state, new VValue(bestCurrentValue, bestAction));
-				}
+				} else V.put(state, new VValue(bestCurrentValue, bestAction));
+			*/
+				V.put(state, new VValue(bestCurrentValue, bestAction));
+			
 			}
-			if(i%1000 == 0) {
+			if(i%10 == 0) {
 				System.out.println(i);
+				for (State state : S) {
+					System.out.print(V.get(state).getReward()+ " "); 
+					Actions a = V.get(state).a;
+					System.out.print(td.reward(state.from, a.city) + " - " + state.from.distanceTo(a.city) * pricePerKm);
+					System.out.println();
+					
+				}
+				System.out.println();
 			}
 			i++;
-		} while((nb(change.values()) == change.size()) && i< 50000);
+		} while((nb(change.values()) < V.size()) && i< 1);
+
+		for (State state : S) {
+			System.out.print(V.get(state).getReward()+ " "); 
+		}
 		System.out.println(i);
 		System.out.println(nb(change.values()));
 		System.out.println(V.size());
@@ -143,7 +178,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private int nb(Collection<Boolean> values) {
 		int sum = 0;
 		for (Boolean bool : values) {
-			if(bool) {
+			if(!bool) {
 				sum++;
 			}
 		}
