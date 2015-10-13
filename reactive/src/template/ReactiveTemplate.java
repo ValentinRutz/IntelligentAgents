@@ -19,6 +19,11 @@ import logist.topology.Topology.City;
 
 public class ReactiveTemplate implements ReactiveBehavior {
 
+	// ADDED CODE - this variable counts how many actions have passed so far
+	int counterSteps = 0;
+	// ADDED CODE - this variable keeps reference of the Agent object
+	Agent agent;
+	
 	private double pricePerKm;
 	private Map<RKey, Double> R;
 	private Map<TKey, Double> T;
@@ -30,6 +35,9 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		// Reads the discount factor from the agents.xml file.
 		// If the property is not present it defaults to 0.95
 		Double discount = agent.readProperty("discount-factor", Double.class, 0.95);
+		
+		// ADDED CODE
+		this.agent = agent;
 
 		this.A = new HashSet<Actions>();
 		this.R = new HashMap<RKey, Double>();
@@ -178,6 +186,15 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	}
 
 	public Action act(Vehicle vehicle, Task availableTask) {
+		// ADDED CODE - this output gives information about the "goodness" of your agent (higher values are preferred)
+		if ((counterSteps > 0) && (counterSteps % 100 == 0)) {
+			System.out.println("The total profit after " + counterSteps + " steps is " + agent.getTotalProfit() + ".");
+			System.out.println("The profit per action after " + counterSteps + " steps is "
+					+ ((double) agent.getTotalProfit() / counterSteps) + ".");
+		}
+		counterSteps++;
+		// END OF ADDED CODE
+		
 		Action action;
 		State currentState;
 		VValue value;
