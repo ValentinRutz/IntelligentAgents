@@ -23,7 +23,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	int counterSteps = 0;
 	// ADDED CODE - this variable keeps reference of the Agent object
 	Agent agent;
-	
+
 	private double pricePerKm;
 	private Map<RKey, Double> R;
 	private Map<TKey, Double> T;
@@ -35,7 +35,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		// Reads the discount factor from the agents.xml file.
 		// If the property is not present it defaults to 0.95
 		Double discount = agent.readProperty("discount-factor", Double.class, 0.95);
-		
+
 		// ADDED CODE
 		this.agent = agent;
 
@@ -45,7 +45,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		this.V = new HashMap<State, VValue>();
 		this.pricePerKm = agent.readProperty("price-per-km", Double.class, 1.d);
 		Set<State> S = new HashSet<State>();
-		
+
 		// Initialize S
 		for (City start : topology.cities()) {
 			for (City genPackage : topology.cities()) {
@@ -57,51 +57,58 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		for (City city : topology.cities()) {
 			A.add(new Actions(city));
 		}
-		//cout<<""
+		// cout<<""
 		// Initialize R(a, s)
-		for (Actions a: A) {
-			for (State s: S) {
+		for (Actions a : A) {
+			for (State s : S) {
 				if (s.currLocation.hasNeighbor(a.city) && !a.city.equals(s.genPackage)) {
-					R.put(new RKey(s, a), - s.currLocation.distanceTo(a.city) * pricePerKm);
+					R.put(new RKey(s, a), -s.currLocation.distanceTo(a.city) * pricePerKm);
 				} else if (s.genPackage != null && a.city.equals(s.genPackage)) {
-					R.put(new RKey(s, a), td.reward(s.currLocation, a.city) - s.currLocation.distanceTo(a.city) * pricePerKm);
+					R.put(new RKey(s, a),
+							td.reward(s.currLocation, a.city) - s.currLocation.distanceTo(a.city) * pricePerKm);
 				} else {
 					R.put(new RKey(s, a), new Double(Integer.MIN_VALUE));
 				}
 				for (State to : S) {
-					if(s.genPackage != null && a.city.equals(s.genPackage) && s.genPackage.equals(to.currLocation)) {
-						T.put(new TKey(s, a, to), 1.d * td.probability(s.currLocation, s.genPackage) * td.probability(to.currLocation, to.genPackage));
-					} else if(!a.city.equals(s.genPackage) && s.currLocation.hasNeighbor(to.currLocation) && a.city.equals(to.currLocation)) {
-						T.put(new TKey(s, a, to), 1.d * td.probability(s.currLocation, s.genPackage) * td.probability(to.currLocation, to.genPackage));
+					if (s.genPackage != null && a.city.equals(s.genPackage) && s.genPackage.equals(to.currLocation)) {
+						T.put(new TKey(s, a, to), 1.d * td.probability(s.currLocation, s.genPackage)
+								* td.probability(to.currLocation, to.genPackage));
+					} else if (!a.city.equals(s.genPackage) && s.currLocation.hasNeighbor(to.currLocation)
+							&& a.city.equals(to.currLocation)) {
+						T.put(new TKey(s, a, to), 1.d * td.probability(s.currLocation, s.genPackage)
+								* td.probability(to.currLocation, to.genPackage));
 					} else {
 						T.put(new TKey(s, a, to), 0.d);
 					}
 				}
 			}
 		}
-		
-//		// Initialize T(s, a, s')
-//		for (Actions a : A) {
-//			for (State from : S) {
-//				for (State to : S) {
-//					if(from.genPackage != null && a.city.equals(from.genPackage) && from.genPackage.equals(to.from)) {
-//						T.put(new TKey(from, a, to), td.probability(from.from, from.genPackage));
-//					} else if(!a.city.equals(from.genPackage) && from.from.hasNeighbor(to.from) && a.city.equals(to.from)) {
-//						T.put(new TKey(from, a, to), 1.d/from.from.neighbors().size());
-//					} else {
-//						T.put(new TKey(from, a, to), 0.d);
-//					}
-//				}
-//			}
-//		}
-		
-		// Initialize V(s) with  stupid values
+
+		// // Initialize T(s, a, s')
+		// for (Actions a : A) {
+		// for (State from : S) {
+		// for (State to : S) {
+		// if(from.genPackage != null && a.city.equals(from.genPackage) &&
+		// from.genPackage.equals(to.from)) {
+		// T.put(new TKey(from, a, to), td.probability(from.from,
+		// from.genPackage));
+		// } else if(!a.city.equals(from.genPackage) &&
+		// from.from.hasNeighbor(to.from) && a.city.equals(to.from)) {
+		// T.put(new TKey(from, a, to), 1.d/from.from.neighbors().size());
+		// } else {
+		// T.put(new TKey(from, a, to), 0.d);
+		// }
+		// }
+		// }
+		// }
+
+		// Initialize V(s) with stupid values
 		for (Actions a : A) {
 			for (State s : S) {
 				V.put(s, new VValue(1.d, a));
 			}
 		}
-		
+
 		Map<State, Boolean> change = new HashMap<State, Boolean>(V.size());
 		for (State state : S) {
 			change.put(state, true);
@@ -112,64 +119,69 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			for (State state : S) {
 				Actions bestAction = null;
 				Double bestCurrentValue = 0.0;
-				int k=0;
+				int k = 0;
 				for (Actions action : A) {
 					RKey key = new RKey(state, action);
-					double sum=0;
+					double sum = 0;
 					for (State destination : S) {
-					//	System.out.println("V " + V.get(destination).getReward() + " T " + T.get(new TKey(state, action, destination)));
-						
-						
+						// System.out.println("V " +
+						// V.get(destination).getReward() + " T " + T.get(new
+						// TKey(state, action, destination)));
+
 						sum += T.get(new TKey(state, action, destination)) * V.get(destination).getReward();
 					}
-		//			System.out.println("Sum " + sum);
-		//			System.out.println("R " + R.get(key));
-					
-					
-					double value = discount*sum + R.get(key);
-					
-					if(k==0){
-						bestCurrentValue=value;
+					// System.out.println("Sum " + sum);
+					// System.out.println("R " + R.get(key));
+
+					double value = discount * sum + R.get(key);
+
+					if (k == 0) {
+						bestCurrentValue = value;
 						bestAction = action;
-						k=1;
-					}else if(value >= bestCurrentValue){
-						bestCurrentValue=value;
+						k = 1;
+					} else if (value >= bestCurrentValue) {
+						bestCurrentValue = value;
 						bestAction = action;
 					}
 				}
 				/*
-				System.out.println("Value "+bestCurrentValue);
-				System.out.println(bestAction.city.toString());
-				System.out.println(state.from.toString());
-				System.out.println(state.genPackage.toString());
-				System.out.println(td.reward(state.from, state.genPackage));
-				*/
+				 * System.out.println("Value "+bestCurrentValue);
+				 * System.out.println(bestAction.city.toString());
+				 * System.out.println(state.from.toString());
+				 * System.out.println(state.genPackage.toString());
+				 * System.out.println(td.reward(state.from, state.genPackage));
+				 */
 
-				//break;
-			/*	if(Math.abs(V.get(state).reward - bestCurrentValue) < 0.00001) {
+				// break;
+				if (Math.abs(V.get(state).getReward() - bestCurrentValue) < Double.MIN_NORMAL) {
 					change.put(state, false);
-				} else V.put(state, new VValue(bestCurrentValue, bestAction));
-			*/
-				V.put(state, new VValue(bestCurrentValue, bestAction));
-			
+				} else {
+					change.put(state, true);
+					V.put(state, new VValue(bestCurrentValue, bestAction));
+				}
+
+				// V.put(state, new VValue(bestCurrentValue, bestAction));
+
 			}
-			if(i%10 == 0) {
+			if (i % 100 == 0) {
 				System.out.println(i);
 				for (State state : S) {
-					System.out.print(V.get(state).getReward()+ " "); 
-					Actions a = V.get(state).a;
-					System.out.print(td.reward(state.currLocation, a.city) + " - " + state.currLocation.distanceTo(a.city) * pricePerKm);
-					System.out.println();
-					
+					System.out.print(V.get(state).getReward() + " ");
+//					Actions a = V.get(state).a;
+//					System.out.print(td.reward(state.currLocation, a.city) + " - "
+//							+ state.currLocation.distanceTo(a.city) * pricePerKm);
+//					System.out.println();
+
 				}
 				System.out.println();
 			}
 			i++;
-		} while((nb(change.values()) != V.size()) && i< 1);
+		} while ((nb(change.values()) != V.size())/* && i < 1000*/);
 
 		for (State state : S) {
-			System.out.print(V.get(state).getReward()+ " "); 
+			System.out.print(V.get(state).getReward() + " ");
 		}
+		System.out.println();
 		System.out.println(i);
 		System.out.println(nb(change.values()));
 		System.out.println(V.size());
@@ -178,7 +190,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private int nb(Collection<Boolean> values) {
 		int sum = 0;
 		for (Boolean bool : values) {
-			if(!bool) {
+			if (!bool) {
 				sum++;
 			}
 		}
@@ -186,7 +198,8 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	}
 
 	public Action act(Vehicle vehicle, Task availableTask) {
-		// ADDED CODE - this output gives information about the "goodness" of your agent (higher values are preferred)
+		// ADDED CODE - this output gives information about the "goodness" of
+		// your agent (higher values are preferred)
 		if ((counterSteps > 0) && (counterSteps % 100 == 0)) {
 			System.out.println("The total profit after " + counterSteps + " steps is " + agent.getTotalProfit() + ".");
 			System.out.println("The profit per action after " + counterSteps + " steps is "
@@ -194,12 +207,12 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		}
 		counterSteps++;
 		// END OF ADDED CODE
-		
+
 		Action action;
 		State currentState;
 		VValue value;
 		Actions bestAction;
-		
+
 		if (availableTask == null) {
 			currentState = new State(vehicle.getCurrentCity(), null);
 			value = V.get(currentState);
@@ -209,7 +222,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			currentState = new State(vehicle.getCurrentCity(), availableTask.deliveryCity);
 			value = V.get(currentState);
 			bestAction = value.a;
-			if(bestAction.city.equals(availableTask.deliveryCity)) {
+			if (bestAction.city.equals(availableTask.deliveryCity)) {
 				action = new Pickup(availableTask);
 			} else {
 				action = new Move(bestAction.city);
@@ -218,16 +231,15 @@ public class ReactiveTemplate implements ReactiveBehavior {
 
 		return action;
 	}
-	
-	
+
 	// Model
 	private class Actions {
 		private City city;
-		
+
 		public Actions(City city) {
 			this.city = city;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -238,7 +250,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		}
 
 		public boolean equals(Object other) {
-			if(!(other instanceof Actions)) {
+			if (!(other instanceof Actions)) {
 				return false;
 			}
 			return ((Actions) other).city.equals(this.city);
@@ -248,16 +260,16 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			return ReactiveTemplate.this;
 		}
 	}
-	
+
 	private class State {
 		private City currLocation, genPackage;
-		
+
 		public State(City from, City genPackage) {
-			assert(from != null);
+			assert (from != null);
 			this.currLocation = from;
 			this.genPackage = genPackage;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -270,12 +282,14 @@ public class ReactiveTemplate implements ReactiveBehavior {
 
 		@Override
 		public boolean equals(Object other) {
-			if(!(other instanceof State)) {
+			if (!(other instanceof State)) {
 				return false;
 			}
 			State otherState = (State) other;
-			return otherState.currLocation.equals(this.currLocation) && (this.genPackage == null && otherState.genPackage == null) ||
-					(this.genPackage != null && otherState.genPackage != null && this.genPackage.equals(otherState.genPackage));
+			return otherState.currLocation.equals(this.currLocation)
+					&& (this.genPackage == null && otherState.genPackage == null)
+					|| (this.genPackage != null && otherState.genPackage != null
+							&& this.genPackage.equals(otherState.genPackage));
 		}
 
 		private ReactiveTemplate getOuterType() {
@@ -286,13 +300,13 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private class RKey {
 		private State s;
 		private Actions a;
-		
+
 		public RKey(State s, Actions a) {
-			assert(s != null && a != null);
+			assert (s != null && a != null);
 			this.s = s;
 			this.a = a;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -305,7 +319,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 
 		@Override
 		public boolean equals(Object other) {
-			if(!(other instanceof RKey)) {
+			if (!(other instanceof RKey)) {
 				return false;
 			}
 			RKey otherKey = (RKey) other;
@@ -320,14 +334,14 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private class TKey {
 		private State start, end;
 		private Actions a;
-		
+
 		public TKey(State start, Actions a, State end) {
-			assert(start != null && a != null && end != null);
+			assert (start != null && a != null && end != null);
 			this.start = start;
 			this.a = a;
 			this.end = end;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -341,7 +355,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 
 		@Override
 		public boolean equals(Object other) {
-			if(!(other instanceof TKey)) {
+			if (!(other instanceof TKey)) {
 				return false;
 			}
 			TKey otherKey = (TKey) other;
@@ -352,13 +366,13 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			return ReactiveTemplate.this;
 		}
 	}
-	
+
 	private class VValue {
 		private double value;
 		private Actions a;
-		
+
 		public VValue(double reward, Actions a) {
-			assert(a != null);
+			assert (a != null);
 			this.value = reward;
 			this.a = a;
 		}
@@ -366,13 +380,13 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		public Double getReward() {
 			return value;
 		}
-		
+
 		@Override
 		public boolean equals(Object other) {
-			if(!(other instanceof VValue)) {
+			if (!(other instanceof VValue)) {
 				return false;
 			}
-			
+
 			VValue otherVValue = (VValue) other;
 			return otherVValue.a == this.a && otherVValue.value == this.value;
 		}
