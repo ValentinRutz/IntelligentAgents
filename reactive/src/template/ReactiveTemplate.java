@@ -43,7 +43,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		this.R = new HashMap<RKey, Double>();
 		this.T = new HashMap<TKey, Double>();
 		this.V = new HashMap<State, VValue>();
-		this.pricePerKm = agent.readProperty("price-per-km", Double.class, 1.d);
+		this.pricePerKm = agent.vehicles().get(0).costPerKm();
 		Set<State> S = new HashSet<State>();
 
 		// Initialize S
@@ -62,7 +62,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		for (Actions a : A) {
 			for (State s : S) {
 				if (s.currLocation.hasNeighbor(a.city) && !a.city.equals(s.genPackage)) {
-					R.put(new RKey(s, a), -s.currLocation.distanceTo(a.city) * pricePerKm);
+					R.put(new RKey(s, a), - s.currLocation.distanceTo(a.city) * pricePerKm);
 				} else if (s.genPackage != null && a.city.equals(s.genPackage)) {
 					R.put(new RKey(s, a),
 							td.reward(s.currLocation, a.city) - s.currLocation.distanceTo(a.city) * pricePerKm);
@@ -153,7 +153,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				 */
 
 				// break;
-				if (Math.abs(V.get(state).getReward() - bestCurrentValue) < Double.MIN_NORMAL) {
+				if (Math.abs(V.get(state).getReward() - bestCurrentValue) < Double.MIN_VALUE) {
 					change.put(state, false);
 				} else {
 					change.put(state, true);
@@ -198,6 +198,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	}
 
 	public Action act(Vehicle vehicle, Task availableTask) {
+		System.out.println(vehicle.name());
 		// ADDED CODE - this output gives information about the "goodness" of
 		// your agent (higher values are preferred)
 		if ((counterSteps > 0) && (counterSteps % 100 == 0)) {

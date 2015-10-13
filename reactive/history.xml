@@ -4,3 +4,4 @@
 	<agents>
 		<agent name="reactive-random">
 			<vehicle name="Vehicle 1"/>
+			<vehicle name="Vehicle 2"/>
