@@ -28,24 +28,22 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private Map<RKey, Double> R;
 	private Map<TKey, Double> T;
 	private Map<State, VValue> V;
-	private Set<Actions> A;
 
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
 
 		// Reads the discount factor from the agents.xml file.
 		// If the property is not present it defaults to 0.95
-		Double discount = agent.readProperty("discount-factor", Double.class,
-				0.95);
+		Double discount = agent.readProperty("discount-factor", Double.class, 0.95);
 
 		// ADDED CODE
 		this.agent = agent;
 
-		this.A = new HashSet<Actions>();
 		this.R = new HashMap<RKey, Double>();
 		this.T = new HashMap<TKey, Double>();
 		this.V = new HashMap<State, VValue>();
 		this.pricePerKm = agent.vehicles().get(0).costPerKm();
 		Set<State> S = new HashSet<State>();
+		Set<Actions> A = new HashSet<Actions>();
 
 		// Initialize S
 		for (City start : topology.cities()) {
@@ -54,6 +52,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			}
 			S.add(new State(start, null));
 		}
+
 		// Initialize A
 		for (City city : topology.cities()) {
 			A.add(new Actions(city));
@@ -66,14 +65,12 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				// state s
 
 				// conditions for move to neighbor action
-				if (s.currLocation.hasNeighbor(a.city)
-						&& !a.city.equals(s.genPackage)) {
-					R.put(new RKey(s, a), -s.currLocation.distanceTo(a.city)
-							* pricePerKm);
+				if (s.currLocation.hasNeighbor(a.city) && !a.city.equals(s.genPackage)) {
+					R.put(new RKey(s, a), -s.currLocation.distanceTo(a.city) * pricePerKm);
 					// conditions for pick-up action
 				} else if (s.genPackage != null && a.city.equals(s.genPackage)) {
-					R.put(new RKey(s, a), td.reward(s.currLocation, a.city)
-							- s.currLocation.distanceTo(a.city) * pricePerKm);
+					R.put(new RKey(s, a),
+							td.reward(s.currLocation, a.city) - s.currLocation.distanceTo(a.city) * pricePerKm);
 				} else {
 					R.put(new RKey(s, a), new Double(Integer.MIN_VALUE));
 				}
@@ -89,17 +86,13 @@ public class ReactiveTemplate implements ReactiveBehavior {
 					// The following conditions check if the action is possible
 
 					// whether it is a pick-up action
-					if (from.genPackage != null
-							&& a.city.equals(from.genPackage)
+					if (from.genPackage != null && a.city.equals(from.genPackage)
 							&& from.genPackage.equals(to.currLocation)) {
-						T.put(new TKey(from, a, to),
-								td.probability(to.currLocation, to.genPackage));
+						T.put(new TKey(from, a, to), td.probability(to.currLocation, to.genPackage));
 						// whether it is move-to-a-neighbor action
-					} else if (!a.city.equals(from.genPackage)
-							&& from.currLocation.hasNeighbor(to.currLocation)
+					} else if (!a.city.equals(from.genPackage) && from.currLocation.hasNeighbor(to.currLocation)
 							&& a.city.equals(to.currLocation)) {
-						T.put(new TKey(from, a, to),
-								td.probability(to.currLocation, to.genPackage));
+						T.put(new TKey(from, a, to), td.probability(to.currLocation, to.genPackage));
 					} else {
 						T.put(new TKey(from, a, to), 0.d);
 					}
@@ -130,8 +123,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 					double sum = 0;
 					for (State destination : S) {
 
-						sum += T.get(new TKey(state, action, destination))
-								* V.get(destination).getReward();
+						sum += T.get(new TKey(state, action, destination)) * V.get(destination).getReward();
 					}
 					double value = discount * sum + R.get(key);
 
@@ -144,7 +136,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 						bestAction = action;
 					}
 				}
-				//check the change of V for the current state
+				// check the change of V for the current state
 				if (Math.abs(V.get(state).getReward() - bestCurrentValue) < Double.MIN_NORMAL) {
 
 					change.put(state, false);
@@ -157,12 +149,13 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			}
 
 			i++;
-			//condition for convergence, all the elements of V to have changed unsignificantly
-		} while ((nb(change.values()) != V.size()) && i < 100000);
+			// condition for convergence, all the elements of V to have changed
+			// unsignificantly
+		} while ((nbChanges(change.values()) != V.size()) && i < 100000);
 
 	}
 
-	private int nb(Collection<Boolean> values) {
+	private int nbChanges(Collection<Boolean> values) {
 		int sum = 0;
 		for (Boolean bool : values) {
 			if (!bool) {
@@ -177,10 +170,8 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		// ADDED CODE - this output gives information about the "goodness" of
 		// your agent (higher values are preferred)
 		if ((counterSteps > 0) && (counterSteps % 100 == 0)) {
-			System.out.println("The total profit after " + counterSteps
-					+ " steps is " + agent.getTotalProfit() + ".");
-			System.out.println("The profit per action after " + counterSteps
-					+ " steps is "
+			System.out.println("The total profit after " + counterSteps + " steps is " + agent.getTotalProfit() + ".");
+			System.out.println("The profit per action after " + counterSteps + " steps is "
 					+ ((double) agent.getTotalProfit() / counterSteps) + ".");
 		}
 		counterSteps++;
@@ -197,8 +188,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			bestAction = value.a;
 			action = new Move(bestAction.city);
 		} else {
-			currentState = new State(vehicle.getCurrentCity(),
-					availableTask.deliveryCity);
+			currentState = new State(vehicle.getCurrentCity(), availableTask.deliveryCity);
 			value = V.get(currentState);
 			bestAction = value.a;
 			if (bestAction.city.equals(availableTask.deliveryCity)) {
@@ -255,8 +245,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			int result = 1;
 			result = prime * result + getOuterType().hashCode();
 			result = prime * result + currLocation.hashCode();
-			result = prime * result
-					+ ((genPackage == null) ? 0 : genPackage.hashCode());
+			result = prime * result + ((genPackage == null) ? 0 : genPackage.hashCode());
 			return result;
 		}
 
@@ -268,9 +257,8 @@ public class ReactiveTemplate implements ReactiveBehavior {
 			State otherState = (State) other;
 			return otherState.currLocation.equals(this.currLocation)
 					&& (this.genPackage == null && otherState.genPackage == null)
-					|| (this.genPackage != null
-							&& otherState.genPackage != null && this.genPackage
-								.equals(otherState.genPackage));
+					|| (this.genPackage != null && otherState.genPackage != null
+							&& this.genPackage.equals(otherState.genPackage));
 		}
 
 		private ReactiveTemplate getOuterType() {
@@ -340,9 +328,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				return false;
 			}
 			TKey otherKey = (TKey) other;
-			return otherKey.a.equals(this.a)
-					&& otherKey.start.equals(this.start)
-					&& otherKey.end.equals(this.end);
+			return otherKey.a.equals(this.a) && otherKey.start.equals(this.start) && otherKey.end.equals(this.end);
 		}
 
 		private ReactiveTemplate getOuterType() {
