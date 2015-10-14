@@ -8,7 +8,6 @@
 		<set class-path="bin/"/>
 		<set class-name="template.ReactiveTemplate"/>
 		<set discount-factor=".85"/>
-		<set price-per-km="1" />
 	</agent>
 	
 </agents>
