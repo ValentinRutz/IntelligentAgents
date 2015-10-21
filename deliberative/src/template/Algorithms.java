@@ -13,6 +13,7 @@ import logist.topology.Topology.City;
 
 final class Algorithms {
 	
+	// Given algorithm. Kinda stupid but works.
 	static Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
@@ -36,17 +37,24 @@ final class Algorithms {
 		return plan;
 	}
 	
+	// BFS search for best plan
 	static Plan bfs(Vehicle v, TaskSet tasks) {
-		City curr;
+		City curr = v.getCurrentCity();
+		
 		TaskSet remainingTasks = tasks.clone();
-		TaskSet carriedTasks = TaskSet.create(new Task[0]);
 		int remainingCapacity = v.capacity();
+		
+		TaskSet carriedTasks = TaskSet.create(new Task[0]);
+		
 		Queue<City> queue = new LinkedList<>();
 		queue.add(v.getCurrentCity());
+		
 		Queue<Queue<Action>> plans = new LinkedList<Queue<Action>>();
+		plans.add(new LinkedList<Action>());
+		
 		Queue<Action> bestPlan = new LinkedList<>();
 		int bestCost = Integer.MAX_VALUE;
-		plans.add(new LinkedList<Action>());
+		
 		
 		while(!queue.isEmpty()) {
 			curr = queue.poll();
@@ -69,5 +77,4 @@ final class Algorithms {
 	static Plan astar(Vehicle v, TaskSet tasks) {
 		return null;
 	}
-
 }
