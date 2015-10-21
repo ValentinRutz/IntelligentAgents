@@ -20,8 +20,6 @@ import logist.topology.Topology;
 @SuppressWarnings("unused")
 public class DeliberativeTemplate implements DeliberativeBehavior {
 
-//	enum Algorithm { BFS, ASTAR, NAIVE }
-	
 	/* Environment */
 	Topology topology;
 	TaskDistribution td;

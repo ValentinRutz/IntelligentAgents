@@ -11,7 +11,7 @@ import logist.topology.Topology.City;
 
 enum Algorithm {
 	BFS, ASTAR, NAIVE;
-	
+
 	// Given algorithm. Kinda stupid but works.
 	static Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
 		City current = vehicle.getCurrentCity();
@@ -35,66 +35,46 @@ enum Algorithm {
 		}
 		return plan;
 	}
-	
+
 	// BFS search for best plan
 	static Plan bfs(Vehicle v, TaskSet tasks) {
-		City curr = v.getCurrentCity();
-		Plan currPlan = new Plan(curr);
-		int currCost = Integer.MAX_VALUE;
+		State current = new State(v.getCurrentCity(), new Plan(v.getCurrentCity()), Integer.MAX_VALUE, tasks,
+				TaskSet.create(new Task[0]), v.capacity());
+
+		Queue<State> queue = new LinkedList<>();
+		queue.add(current);
 		
-		TaskSet remainingTasks = tasks.clone();
-		int remainingCapacity = v.capacity();
-		
-		TaskSet carriedTasks = TaskSet.create(new Task[0]);
-		
-		Queue<City> queue = new LinkedList<>();
-		queue.add(v.getCurrentCity());
-		
-		Queue<Plan> plans = new LinkedList<>();
-		plans.add(currPlan);
-		
-		Plan bestPlan = currPlan;
-		int bestCost = currCost;
-		
-		
-		while(!queue.isEmpty()) {
-			curr = queue.poll();
-			currPlan = plans.poll();
-			
+		Plan bestPlan = current.getPlan();
+		int bestCost = current.getCost();
+
+		while (!queue.isEmpty()) {
+			current = queue.poll();
+
 			// Final State
 			// Compare current plan with best plan (compare costs)
 			// Keep only the best one
-			if(remainingTasks.isEmpty() && carriedTasks.isEmpty() && bestCost > currCost) {
-				bestPlan = currPlan;
-				bestCost = currCost;
-				
-			// Not in a final state. Need to try all kinds of combinations of possible transitions.	
+			if (current.isFinalState(bestCost)) {
+				bestPlan = current.getPlan();
+				bestCost = current.getCost();
+
+				// Not in a final state. Need to try all kinds of combinations
+				// of possible transitions.
 			} else {
 				// Need to be able to mix pickups and deliveries. Break?
 				// Need to remove picked up task from remainingTasks too
-				for (Task t : TaskSet.union(carriedTasks, remainingTasks)) {
-					if (t.pickupCity.equals(curr) && remainingCapacity - t.weight >= 0) {
-						currPlan.appendPickup(t);
-						carriedTasks.add(t);
-						remainingTasks.remove(t);
-						remainingCapacity -= t.weight;
-						queue.add(curr);
-						plans.add(currPlan);
-					} else if (t.deliveryCity.equals(curr)) {
-						for (City city : curr.pathTo(t.pickupCity))
-							currPlan.appendMove(city);
-						currPlan.appendDelivery(t);
-						carriedTasks.remove(t);
-						queue.add(t.deliveryCity);
-						plans.add(currPlan);
+				for (Task t : current.getAllTasks()) {
+					if (current.couldPickup(t)) {
+						queue.add(current.pickup(t));
+					} else if (current.couldDeliver(t)) {
+						queue.add(current.deliver(t));
 					}
 				}
 			}
 		}
-		
+
 		return bestPlan.seal();
 	}
-	
+
 	static Plan astar(Vehicle v, TaskSet tasks) {
 		return null;
 	}
