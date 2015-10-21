@@ -9,6 +9,7 @@ import logist.task.Task;
 import logist.task.TaskSet;
 import logist.topology.Topology.City;
 
+// All algorithms should be implemented here. Add your algorithm to the enum as well
 enum Algorithm {
 	BFS, ASTAR, NAIVE;
 
@@ -38,30 +39,30 @@ enum Algorithm {
 
 	// BFS search for best plan
 	static Plan bfs(Vehicle v, TaskSet tasks) {
-		State current = new State(v.getCurrentCity(), new Plan(v.getCurrentCity()), Integer.MAX_VALUE, tasks,
-				TaskSet.create(new Task[0]), v.capacity());
+		System.out.println("Beginning of plan computation");
+		State current = new State(v.getCurrentCity(), new Plan(v.getCurrentCity()), 0, tasks, v.getCurrentTasks(),
+				v.capacity());
 
-		Queue<State> queue = new LinkedList<>();
+		Queue<State> queue = new LinkedList<State>();
 		queue.add(current);
-		
+
 		Plan bestPlan = current.getPlan();
 		int bestCost = current.getCost();
 
 		while (!queue.isEmpty()) {
 			current = queue.poll();
+			assert (current != null);
 
 			// Final State
 			// Compare current plan with best plan (compare costs)
 			// Keep only the best one
 			if (current.isFinalState(bestCost)) {
+				System.out.println("Arrived at a final state!");
 				bestPlan = current.getPlan();
 				bestCost = current.getCost();
 
-				// Not in a final state. Need to try all kinds of combinations
-				// of possible transitions.
+				// Not in a final state. Try to act on all tasks
 			} else {
-				// Need to be able to mix pickups and deliveries. Break?
-				// Need to remove picked up task from remainingTasks too
 				for (Task t : current.getAllTasks()) {
 					if (current.couldPickup(t)) {
 						queue.add(current.pickup(t));
@@ -71,7 +72,7 @@ enum Algorithm {
 				}
 			}
 		}
-
+		System.out.println("End of plan computation");
 		return bestPlan.seal();
 	}
 

@@ -23,30 +23,30 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	/* Environment */
 	Topology topology;
 	TaskDistribution td;
-	
+
 	/* the properties of the agent */
 	Agent agent;
 	int capacity;
 
 	/* the planning class */
 	Algorithm algorithm;
-	
+
 	@Override
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
 		this.topology = topology;
 		this.td = td;
 		this.agent = agent;
-		
+
 		// initialize the planner
 		int capacity = agent.vehicles().get(0).capacity();
-		String algorithmName = agent.readProperty("algorithm", String.class, "ASTAR");
-		
+		String algorithmName = agent.readProperty("algorithm", String.class, "NAIVE");
+
 		// Throws IllegalArgumentException if algorithm is unknown
 		algorithm = Algorithm.valueOf(algorithmName.toUpperCase());
-		
+
 		// ...
 	}
-	
+
 	@Override
 	public Plan plan(Vehicle vehicle, TaskSet tasks) {
 		Plan plan;
@@ -67,13 +67,13 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			break;
 		default:
 			throw new AssertionError("Should not happen.");
-		}		
+		}
 		return plan;
 	}
-	
+
 	@Override
 	public void planCancelled(TaskSet carriedTasks) {
-		
+
 		if (!carriedTasks.isEmpty()) {
 			// This cannot happen for this simple agent, but typically
 			// you will need to consider the carriedTasks when the next
