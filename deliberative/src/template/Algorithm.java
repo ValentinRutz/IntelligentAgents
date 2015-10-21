@@ -1,17 +1,16 @@
 package template;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import logist.plan.Action;
 import logist.plan.Plan;
 import logist.simulation.Vehicle;
 import logist.task.Task;
 import logist.task.TaskSet;
 import logist.topology.Topology.City;
 
-final class Algorithms {
+enum Algorithm {
+	BFS, ASTAR, NAIVE;
 	
 	// Given algorithm. Kinda stupid but works.
 	static Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
@@ -44,7 +43,7 @@ final class Algorithms {
 		int currCost = Integer.MAX_VALUE;
 		
 		TaskSet remainingTasks = tasks.clone();
-//		int remainingCapacity = v.capacity();
+		int remainingCapacity = v.capacity();
 		
 		TaskSet carriedTasks = TaskSet.create(new Task[0]);
 		
@@ -74,10 +73,20 @@ final class Algorithms {
 				// Need to be able to mix pickups and deliveries. Break?
 				// Need to remove picked up task from remainingTasks too
 				for (Task t : TaskSet.union(carriedTasks, remainingTasks)) {
-					if (t.pickupCity.equals(curr)) {
+					if (t.pickupCity.equals(curr) && remainingCapacity - t.weight >= 0) {
 						currPlan.appendPickup(t);
+						carriedTasks.add(t);
+						remainingTasks.remove(t);
+						remainingCapacity -= t.weight;
+						queue.add(curr);
+						plans.add(currPlan);
 					} else if (t.deliveryCity.equals(curr)) {
+						for (City city : curr.pathTo(t.pickupCity))
+							currPlan.appendMove(city);
 						currPlan.appendDelivery(t);
+						carriedTasks.remove(t);
+						queue.add(t.deliveryCity);
+						plans.add(currPlan);
 					}
 				}
 			}

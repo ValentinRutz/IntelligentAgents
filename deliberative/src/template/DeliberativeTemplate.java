@@ -1,8 +1,9 @@
 package template;
 
-import static template.Algorithms.bfs;
-import static template.Algorithms.astar;
-import static template.Algorithms.naivePlan;
+import template.Algorithm;
+import static template.Algorithm.bfs;
+import static template.Algorithm.astar;
+import static template.Algorithm.naivePlan;
 
 import logist.agent.Agent;
 import logist.behavior.DeliberativeBehavior;
@@ -19,7 +20,7 @@ import logist.topology.Topology;
 @SuppressWarnings("unused")
 public class DeliberativeTemplate implements DeliberativeBehavior {
 
-	enum Algorithm { BFS, ASTAR, NAIVE }
+//	enum Algorithm { BFS, ASTAR, NAIVE }
 	
 	/* Environment */
 	Topology topology;
