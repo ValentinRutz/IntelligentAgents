@@ -65,5 +65,9 @@ final class Algorithms {
 		
 		return new Plan(v.getCurrentCity(), new ArrayList<Action>(bestPlan));
 	}
+	
+	static Plan astar(Vehicle v, TaskSet tasks) {
+		return null;
+	}
 
 }

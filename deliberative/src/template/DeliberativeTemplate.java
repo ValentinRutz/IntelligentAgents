@@ -1,6 +1,7 @@
 package template;
 
 import static template.Algorithms.bfs;
+import static template.Algorithms.astar;
 import static template.Algorithms.naivePlan;
 
 import logist.agent.Agent;
@@ -18,7 +19,7 @@ import logist.topology.Topology;
 @SuppressWarnings("unused")
 public class DeliberativeTemplate implements DeliberativeBehavior {
 
-	enum Algorithm { BFS, ASTAR }
+	enum Algorithm { BFS, ASTAR, NAIVE }
 	
 	/* Environment */
 	Topology topology;
@@ -55,12 +56,16 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		switch (algorithm) {
 		case ASTAR:
 			// ...
-			plan = naivePlan(vehicle, tasks);
+			plan = astar(vehicle, tasks);
 			break;
 		case BFS:
 			// ...
 			plan = bfs(vehicle, tasks);
 			break;
+		case NAIVE:
+			// ...
+			plan = naivePlan(vehicle, tasks);
+			
 		default:
 			throw new AssertionError("Should not happen.");
 		}		
