@@ -40,7 +40,7 @@ final class Algorithms {
 	// BFS search for best plan
 	static Plan bfs(Vehicle v, TaskSet tasks) {
 		City curr = v.getCurrentCity();
-		Queue<Action> currPlan;
+		Plan currPlan = new Plan(curr);
 		int currCost = Integer.MAX_VALUE;
 		
 		TaskSet remainingTasks = tasks.clone();
@@ -51,11 +51,11 @@ final class Algorithms {
 		Queue<City> queue = new LinkedList<>();
 		queue.add(v.getCurrentCity());
 		
-		Queue<Queue<Action>> plans = new LinkedList<Queue<Action>>();
-		plans.add(new LinkedList<Action>());
+		Queue<Plan> plans = new LinkedList<>();
+		plans.add(currPlan);
 		
-		Queue<Action> bestPlan = new LinkedList<>();
-		int bestCost = Integer.MAX_VALUE;
+		Plan bestPlan = currPlan;
+		int bestCost = currCost;
 		
 		
 		while(!queue.isEmpty()) {
@@ -73,23 +73,17 @@ final class Algorithms {
 			} else {
 				// Need to be able to mix pickups and deliveries. Break?
 				// Need to remove picked up task from remainingTasks too
-				for (Task t : remainingTasks) {
+				for (Task t : TaskSet.union(carriedTasks, remainingTasks)) {
 					if (t.pickupCity.equals(curr)) {
-						
-						
-					}
-				}
-				
-				for (Task t : carriedTasks) {
-					if (t.deliveryCity.equals(curr)) {
-						
+						currPlan.appendPickup(t);
+					} else if (t.deliveryCity.equals(curr)) {
+						currPlan.appendDelivery(t);
 					}
 				}
 			}
 		}
 		
-		
-		return new Plan(v.getCurrentCity(), new ArrayList<Action>(bestPlan));
+		return bestPlan.seal();
 	}
 	
 	static Plan astar(Vehicle v, TaskSet tasks) {
