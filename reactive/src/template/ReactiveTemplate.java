@@ -150,7 +150,7 @@ public class ReactiveTemplate implements ReactiveBehavior {
 
 			i++;
 			// condition for convergence, all the elements of V to have changed
-			// unsignificantly
+			// insignificantly
 		} while ((nbChanges(change.values()) != V.size()) && i < 100000);
 
 	}
@@ -166,7 +166,6 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	}
 
 	public Action act(Vehicle vehicle, Task availableTask) {
-		System.out.println(vehicle.name());
 		// ADDED CODE - this output gives information about the "goodness" of
 		// your agent (higher values are preferred)
 		if ((counterSteps > 0) && (counterSteps % 100 == 0)) {

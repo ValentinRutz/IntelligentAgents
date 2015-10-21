@@ -1,15 +1,16 @@
 package template;
 
-/* import table */
-import logist.simulation.Vehicle;
+import static template.Algorithms.bfs;
+import static template.Algorithms.naivePlan;
+
 import logist.agent.Agent;
 import logist.behavior.DeliberativeBehavior;
 import logist.plan.Plan;
-import logist.task.Task;
+/* import table */
+import logist.simulation.Vehicle;
 import logist.task.TaskDistribution;
 import logist.task.TaskSet;
 import logist.topology.Topology;
-import logist.topology.Topology.City;
 
 /**
  * An optimal planner for one vehicle.
@@ -58,7 +59,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			break;
 		case BFS:
 			// ...
-			plan = naivePlan(vehicle, tasks);
+			plan = bfs(vehicle, tasks);
 			break;
 		default:
 			throw new AssertionError("Should not happen.");
@@ -66,29 +67,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		return plan;
 	}
 	
-	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
-		City current = vehicle.getCurrentCity();
-		Plan plan = new Plan(current);
-
-		for (Task task : tasks) {
-			// move: current city => pickup location
-			for (City city : current.pathTo(task.pickupCity))
-				plan.appendMove(city);
-
-			plan.appendPickup(task);
-
-			// move: pickup location => delivery location
-			for (City city : task.path())
-				plan.appendMove(city);
-
-			plan.appendDelivery(task);
-
-			// set current city
-			current = task.deliveryCity;
-		}
-		return plan;
-	}
-
 	@Override
 	public void planCancelled(TaskSet carriedTasks) {
 		
