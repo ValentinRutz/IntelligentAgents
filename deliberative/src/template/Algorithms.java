@@ -40,9 +40,11 @@ final class Algorithms {
 	// BFS search for best plan
 	static Plan bfs(Vehicle v, TaskSet tasks) {
 		City curr = v.getCurrentCity();
+		Queue<Action> currPlan;
+		int currCost = Integer.MAX_VALUE;
 		
 		TaskSet remainingTasks = tasks.clone();
-		int remainingCapacity = v.capacity();
+//		int remainingCapacity = v.capacity();
 		
 		TaskSet carriedTasks = TaskSet.create(new Task[0]);
 		
@@ -58,15 +60,31 @@ final class Algorithms {
 		
 		while(!queue.isEmpty()) {
 			curr = queue.poll();
-			for (Task t : tasks) {
-				if(t.pickupCity.equals(curr)) {
-					
-					
-				}
-			}
+			currPlan = plans.poll();
 			
-			for (Task t : carriedTasks) {
+			// Final State
+			// Compare current plan with best plan (compare costs)
+			// Keep only the best one
+			if(remainingTasks.isEmpty() && carriedTasks.isEmpty() && bestCost > currCost) {
+				bestPlan = currPlan;
+				bestCost = currCost;
 				
+			// Not in a final state. Need to try all kinds of combinations of possible transitions.	
+			} else {
+				// Need to be able to mix pickups and deliveries. Break?
+				// Need to remove picked up task from remainingTasks too
+				for (Task t : remainingTasks) {
+					if (t.pickupCity.equals(curr)) {
+						
+						
+					}
+				}
+				
+				for (Task t : carriedTasks) {
+					if (t.deliveryCity.equals(curr)) {
+						
+					}
+				}
 			}
 		}
 		
