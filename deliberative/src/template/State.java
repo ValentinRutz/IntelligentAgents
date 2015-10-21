@@ -50,7 +50,7 @@ class State {
 		return city;
 	}
 
-	boolean isFinalState(int bestCost) {
+	boolean isBetterFinalState(int bestCost) {
 		return remainingTasks.isEmpty() && carriedTasks.isEmpty() && cost < bestCost;
 	}
 

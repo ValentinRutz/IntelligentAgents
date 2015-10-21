@@ -47,7 +47,7 @@ enum Algorithm {
 		queue.add(current);
 
 		Plan bestPlan = current.getPlan();
-		int bestCost = current.getCost();
+		int bestCost = Integer.MAX_VALUE;
 
 		while (!queue.isEmpty()) {
 			current = queue.poll();
@@ -56,7 +56,7 @@ enum Algorithm {
 			// Final State
 			// Compare current plan with best plan (compare costs)
 			// Keep only the best one
-			if (current.isFinalState(bestCost)) {
+			if (current.isBetterFinalState(bestCost)) {
 				System.out.println("Arrived at a final state!");
 				bestPlan = current.getPlan();
 				bestCost = current.getCost();
