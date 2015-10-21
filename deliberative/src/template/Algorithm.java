@@ -1,8 +1,13 @@
 package template;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
+import logist.plan.Action;
 import logist.plan.Plan;
 import logist.simulation.Vehicle;
 import logist.task.Task;
@@ -40,40 +45,45 @@ enum Algorithm {
 	// BFS search for best plan
 	static Plan bfs(Vehicle v, TaskSet tasks) {
 		System.out.println("Beginning of plan computation");
-		State current = new State(v.getCurrentCity(), new Plan(v.getCurrentCity()), 0, tasks, v.getCurrentTasks(),
-				v.capacity());
+		List<Action> l = new ArrayList<Action>();
+		Set<State> cycle = new HashSet<State>();
+		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet.create(new Task[0]) : v.getCurrentTasks();
+		State current = new State(v.getCurrentCity(), l, 0, tasks, initialCarriedTasks, v.capacity());
 
 		Queue<State> queue = new LinkedList<State>();
 		queue.add(current);
 
-		Plan bestPlan = current.getPlan();
+		List<Action> bestPlan = new ArrayList<Action>();
 		int bestCost = Integer.MAX_VALUE;
 
 		while (!queue.isEmpty()) {
 			current = queue.poll();
-			assert (current != null);
 
 			// Final State
 			// Compare current plan with best plan (compare costs)
 			// Keep only the best one
 			if (current.isBetterFinalState(bestCost)) {
-				System.out.println("Arrived at a final state!");
-				bestPlan = current.getPlan();
+				bestPlan = current.getActions();
 				bestCost = current.getCost();
 
 				// Not in a final state. Try to act on all tasks
-			} else {
+			} else if (!cycle.contains(current)) {
+				State newState = null;
 				for (Task t : current.getAllTasks()) {
-					if (current.couldPickup(t)) {
-						queue.add(current.pickup(t));
-					} else if (current.couldDeliver(t)) {
-						queue.add(current.deliver(t));
+					if (current.canPickup(t)) {
+						newState = current.pickup(t);
+					} else if (current.canDeliver(t)) {
+						newState = current.deliver(t);
 					}
+					queue.add(newState);
+					cycle.add(current);
 				}
 			}
 		}
+		System.out.println(bestPlan);
+		assert (!bestPlan.isEmpty());
 		System.out.println("End of plan computation");
-		return bestPlan.seal();
+		return new Plan(v.getCurrentCity(), bestPlan).seal();
 	}
 
 	static Plan astar(Vehicle v, TaskSet tasks) {
