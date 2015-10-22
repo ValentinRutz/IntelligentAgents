@@ -1,9 +1,11 @@
 package template;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
@@ -54,7 +56,7 @@ enum Algorithm {
 		queue.add(current);
 
 		List<Action> bestPlan = new ArrayList<Action>();
-		int bestCost = Integer.MAX_VALUE;
+		double bestCost = Integer.MAX_VALUE;
 
 		while (!queue.isEmpty()) {
 			current = queue.poll();
@@ -87,6 +89,58 @@ enum Algorithm {
 	}
 
 	static Plan astar(Vehicle v, TaskSet tasks) {
+		 Comparator<State> comparator = new StateComparator();
+	        PriorityQueue<State> opened = 
+	            new PriorityQueue<State>(10, comparator);
+	        Set<State> closed = new HashSet<State>();
+	        
+	    	List<Action> l = new ArrayList<Action>();
+			TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet.create(new Task[0]) : v.getCurrentTasks();
+			State current = new State(v.getCurrentCity(), l, 0, tasks, initialCarriedTasks, v.capacity());
+			current.sethValue();
+			opened.add(current);
+			
+			while( !opened.peek().isFinalState()){
+				current = opened.poll();
+				closed.add(current);
+				State neighbor=null;
+				for (Task t : current.getAllTasks()) {
+					if (current.canPickup(t)) {
+						neighbor = current.pickup(t);
+					} else if (current.canDeliver(t)) {
+						neighbor = current.deliver(t);
+					}
+					
+					if(opened.contains(neighbor)){
+						
+					}
+					
+				}
+				
+				
+				
+			}
+	        
+//	        OPEN = priority queue containing START
+//	        		CLOSED = empty set
+//	        		while lowest rank in OPEN is not the GOAL:
+//	        		  current = remove lowest rank item from OPEN
+//	        		  add current to CLOSED
+//	        		  for neighbors of current:
+//	        		    cost = g(current) + movementcost(current, neighbor)
+//	        		    if neighbor in OPEN and cost less than g(neighbor):
+//	        		      remove neighbor from OPEN, because new path is better
+//	        		    if neighbor in CLOSED and cost less than g(neighbor): **
+//	        		      remove neighbor from CLOSED
+//	        		    if neighbor not in OPEN and neighbor not in CLOSED:
+//	        		      set g(neighbor) to cost
+//	        		      add neighbor to OPEN
+//	        		      set priority queue rank to g(neighbor) + h(neighbor)
+//	        		      set neighbor's parent to current
+//
+//	        		reconstruct reverse path from goal to start
+//	        		by following parent pointers
+//	     
 		return null;
 	}
 }

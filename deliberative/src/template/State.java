@@ -14,17 +14,49 @@ import logist.task.Task;
 import logist.task.TaskSet;
 import logist.topology.Topology.City;
 
+import java.util.Comparator;
+
+
 // Describes a state and makes the transitions if they are possible
 class State {
 	private City city;
 	private List<Action> actions;
-	private int cost;
+	private double cost;
 
 	private TaskSet remainingTasks;
 	private TaskSet carriedTasks;
 	private int capacity;
+	
+	private double hValue;
 
-	public State(City city, List<Action> actions, int cost, TaskSet remainingTasks, TaskSet carriedTasks,
+	public double gethValue() {
+		return hValue;
+	}
+
+	public void sethValue() {
+		//set F to the cost of the currently most expensive task
+		double maxCost = 0;
+		
+		for(Task t : remainingTasks){
+			double currCost = city.distanceTo(t.pickupCity);
+			currCost += t.pickupCity.distanceTo(t.deliveryCity);
+			if(currCost > maxCost) 
+				maxCost = currCost;
+			
+		}
+		
+		for(Task t : carriedTasks){
+			double currCost = city.distanceTo(t.deliveryCity);
+			if(currCost > maxCost) 
+				maxCost = currCost;
+			
+		}
+		
+		this.hValue = maxCost;
+		
+	}
+
+	public State(City city, List<Action> actions, double cost, TaskSet remainingTasks, TaskSet carriedTasks,
 			int capacity) {
 		assert (actions != null && remainingTasks != null && carriedTasks != null && capacity >= 0 && cost >= 0);
 		this.city = city;
@@ -40,7 +72,7 @@ class State {
 		return actions;
 	}
 
-	int getCost() {
+	double getCost() {
 		return cost;
 	}
 
@@ -48,9 +80,14 @@ class State {
 		return city;
 	}
 
-	boolean isBetterFinalState(int bestCost) {
+	boolean isBetterFinalState(double bestCost) {
 		return remainingTasks.isEmpty() && carriedTasks.isEmpty() && cost <= bestCost;
 	}
+	
+	boolean isFinalState() {
+		return remainingTasks.isEmpty() && carriedTasks.isEmpty();
+	}
+
 
 	TaskSet getAllTasks() {
 		return union(remainingTasks, carriedTasks);
@@ -102,16 +139,21 @@ class State {
 		return this;
 	}
 
+	
 	// TODO Auto-generated methods
 	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((carriedTasks == null) ? 0 : carriedTasks.hashCode());
+		result = prime * result
+				+ ((carriedTasks == null) ? 0 : carriedTasks.hashCode());
 		result = prime * result + ((city == null) ? 0 : city.hashCode());
-		result = prime * result + cost;
-		result = prime * result + ((remainingTasks == null) ? 0 : remainingTasks.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(cost);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result
+				+ ((remainingTasks == null) ? 0 : remainingTasks.hashCode());
 		return result;
 	}
 
@@ -134,7 +176,8 @@ class State {
 				return false;
 		} else if (!city.equals(other.city))
 			return false;
-		if (cost != other.cost)
+		if (Double.doubleToLongBits(cost) != Double
+				.doubleToLongBits(other.cost))
 			return false;
 		if (remainingTasks == null) {
 			if (other.remainingTasks != null)
@@ -144,4 +187,19 @@ class State {
 		return true;
 	}
 
+	
+	
+}
+
+
+
+class StateComparator implements Comparator<State>
+{
+	@Override
+	public int compare(State o1, State o2) {
+		// TODO Auto-generated method stub
+		
+		
+		return (int)(o1.gethValue() - o2.gethValue());
+	}
 }
