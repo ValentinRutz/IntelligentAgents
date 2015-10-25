@@ -73,7 +73,6 @@ enum Algorithm {
 			// Final State
 			// Compare current plan with best plan (compare costs)
 			// Keep only the best one
-			
 			if (current.isFinalState()) {
 
 				// bestPlan = current.getActions();
@@ -101,10 +100,10 @@ enum Algorithm {
 						
 						//we have arrived in a previously visited state, but this time with lower cost
 						if (exploredStates.get(newState).cost > previous.cost){
-							queue.add(newState);						
+											
 							exploredStates.put(newState, previous);
 						}
-					} else{
+					} else if(newState!=null){					
 						queue.add(newState);
 						exploredStates.put(newState, previous);	
 					}
