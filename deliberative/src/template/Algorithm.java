@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
+import epfl.lia.logist.core.topology.Topology;
 import logist.plan.Action;
 import logist.plan.Plan;
 import logist.simulation.Vehicle;
@@ -77,7 +79,7 @@ enum Algorithm {
 
 				// bestPlan = current.getActions();
 				// bestCost = current.getCost();
-		    	if (exploredStates.get(current).cost < bestCost) {
+				if (exploredStates.get(current).cost < bestCost) {
 					bestPath = new Path(exploredStates.get(current));
 					bestCost = exploredStates.get(current).cost;
 				}
@@ -85,32 +87,37 @@ enum Algorithm {
 				// Not in a final state. Try to act on all tasks
 			} else {
 
-				State newState = null;
-
 				for (Task t : current.getAllTasks()) {
+					State newState = null;
+
 					Path previous = new Path(exploredStates.get(current));
 
 					if (current.canPickup(t)) {
 						newState = current.pickup(t, previous);
-
 					} else if (current.canDeliver(t)) {
 						newState = current.deliver(t, previous);
 					}
+
 					if (exploredStates.containsKey(newState)) {
-						
-						//we have arrived in a previously visited state, but this time with lower cost
-						if (exploredStates.get(newState).cost > previous.cost){
-											
+
+						// we have arrived in a previously visited state, but
+						// this time with lower cost
+						if (exploredStates.get(newState).cost > previous.cost) {
+							// if(!queue.contains(newState)){
+							// queue.add(newState);
+							// }
 							exploredStates.put(newState, previous);
 						}
-					} else if(newState!=null){					
+					} else if (newState != null) {
 						queue.add(newState);
-						exploredStates.put(newState, previous);	
+						exploredStates.put(newState, previous);
 					}
-						
+
 				}
+
 			}
 		}
+
 		System.out.println(bestPath.actions);
 		System.out.println(bestPath.cost);
 		System.out.println("End of plan computation");
