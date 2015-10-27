@@ -81,13 +81,13 @@ abstract class State {
 	abstract State pickup(Task t, Path p);
 
 	boolean canPickup(Task t) {
-		return remainingTasks.contains(t) && capacity - t.weight >= 0;
+		return remainingTasks.contains(t) && t.pickupCity.equals(city) && capacity - t.weight >= 0;
 	}
 
 	abstract State deliver(Task t, Path p);
 
 	boolean canDeliver(Task t) {
-		return carriedTasks.contains(t);
+		return carriedTasks.contains(t) && t.deliveryCity.equals(city);
 	}
 
 	public abstract State clone();
@@ -164,14 +164,21 @@ class BFSState extends State {
 
 	@Override
 	State pickup(Task t, Path p) {
-		// TODO Auto-generated method stub
-		return null;
+		State next = clone();
+		p.actions.add(new Pickup(t));
+		next.carriedTasks.add(t);
+		next.remainingTasks.remove(t);
+		next.capacity -= t.weight;
+		return next;
 	}
 
 	@Override
 	State deliver(Task t, Path p) {
-		// TODO Auto-generated method stub
-		return null;
+		State next = clone();
+		p.actions.add(new Delivery(t));
+		next.carriedTasks.remove(t);
+		next.capacity += t.weight;
+		return next;
 	}
 
 	@Override
@@ -180,11 +187,14 @@ class BFSState extends State {
 	}
 
 	@Override
-	protected State move(City endCity, Path p) {
-		// TODO Auto-generated method stub
-		return null;
+	protected State move(City neighbor, Path p) {
+		State next = clone();
+		if (!neighbor.equals(city)) {
+			p.actions.add(new Move(neighbor));
+			next.city = neighbor;
+		}
+		return next;
 	}
-	
 }
 
 class AStarState extends State {
@@ -232,10 +242,6 @@ class AStarState extends State {
 		return next;
 	}
 
-	boolean canPickup(Task t) {
-		return remainingTasks.contains(t) && capacity - t.weight >= 0;
-	}
-
 	State deliver(Task t, Path p) {
 		assert (carriedTasks.contains(t) && !remainingTasks.contains(t));
 		State next = clone();
@@ -245,10 +251,6 @@ class AStarState extends State {
 		assert (!(carriedTasks.contains(t) || remainingTasks.contains(t)));
 		next.capacity += t.weight;
 		return next;
-	}
-
-	boolean canDeliver(Task t) {
-		return carriedTasks.contains(t);
 	}
 
 	public State clone() {
@@ -272,9 +274,6 @@ class AStarState extends State {
 class StateComparator implements Comparator<AStarState> {
 	@Override
 	public int compare(AStarState o1, AStarState o2) {
-		// TODO Auto-generated method stub
-
-
 		if (o1.gethValue() < o2.gethValue()) {
 			return -1;
 		} else if (o1.gethValue() == o2.gethValue()) {

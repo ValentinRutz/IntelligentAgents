@@ -1,17 +1,14 @@
 package template;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
-import logist.plan.Action;
 import logist.plan.Plan;
 import logist.simulation.Vehicle;
 import logist.task.Task;
@@ -45,86 +42,66 @@ enum Algorithm {
 		}
 		return plan;
 	}
-//
-//	// BFS search for best plan
-//	static Plan bfs(Vehicle v, TaskSet tasks) {
-//		
-//	}
-	
-	
-	static Plan bfs(Vehicle v, TaskSet tasks) {
-		System.out.println("Beginning of plan computation");
-		// List<Action> l = new ArrayList<Action>();
-		Map<State, Path> exploredStates = new HashMap<State, Path>();
-		// Set<State> cycle = new HashSet<State>();
-		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet
-				.create(new Task[0]) : v.getCurrentTasks();
-		State current = new BFSState(v.getCurrentCity(), tasks,
-				initialCarriedTasks, v.capacity());
 
+	// BFS search for best plan
+	static Plan bfs(Vehicle v, TaskSet tasks) {
+		System.out.println("Beginning of plan computation with BFS");
+		
+		Map<State, Path> exploredStates = new HashMap<State, Path>();
+		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet.create(new Task[0]) : v.getCurrentTasks();
+		State current = new BFSState(v.getCurrentCity(), tasks, initialCarriedTasks, v.capacity());
+		
 		Queue<State> queue = new LinkedList<State>();
 		queue.add(current);
 		Path p = new Path();
 		exploredStates.put(current, p);
-
-		List<Action> bestPlan = new ArrayList<Action>();
-		double bestCost = Integer.MAX_VALUE;
-
-		Path bestPath = new Path();
-
+		
 		while (!queue.isEmpty()) {
 			current = queue.poll();
-
-			// Final State
-			// Compare current plan with best plan (compare costs)
-			// Keep only the best one
+			Path parentsPath = exploredStates.get(current);
+			
+			// Final State since we use BFS, we arrived with the minimal number of actions to that state so we can directly return
 			if (current.isFinalState()) {
+				System.out.println(parentsPath.actions);
+				System.out.println(parentsPath.actions.size());
+				System.out.println("End of plan computation with BFS");
+				return new Plan(v.getCurrentCity(), parentsPath.actions).seal();
 
-				// bestPlan = current.getActions();
-				// bestCost = current.getCost();
-				if (exploredStates.get(current).cost < bestCost) {
-					bestPath = new Path(exploredStates.get(current));
-					bestCost = exploredStates.get(current).cost;
-				}
-
-				// Not in a final state. Try to act on all tasks
+				// Not in a final state. 
 			} else {
-
-				for (Task t : current.getAllTasks()) {
-					State newState = null;
-
-					Path previous = new Path(exploredStates.get(current));
-
-					if (current.canPickup(t)) {
-						newState = current.pickup(t, previous);
-					} else if (current.canDeliver(t)) {
-						newState = current.deliver(t, previous);
-					}
-
-					if (exploredStates.containsKey(newState)) {
-
-						// we have arrived in a previously visited state, but
-						// this time with lower cost
-						if (exploredStates.get(newState).cost > previous.cost) {
-							// if(!queue.contains(newState)){
-							// queue.add(newState);
-							// }
-							exploredStates.put(newState, previous);
-						}
-					} else if (newState != null) {
+				State newState = null;
+				Path newPath = null;
+				// Move to all neighbors
+				for (City neighbor : current.city.neighbors()) {
+					newPath = new Path(parentsPath);
+					newState = current.move(neighbor, newPath);
+					if (!exploredStates.containsKey(newState)) {
+						exploredStates.put(newState, newPath);
 						queue.add(newState);
-						exploredStates.put(newState, previous);
 					}
-
 				}
-
+				
+				// Pickup all the tasks
+				// Deliver all the tasks
+				for (Task t : current.getAllTasks()) {
+					newState = null;
+					newPath = new Path(parentsPath);
+					if (current.canPickup(t)) {
+						newState = current.pickup(t, newPath);
+					} else if (current.canDeliver(t)) {
+						newState = current.deliver(t, newPath);
+					}
+					
+					if (newState != null && !exploredStates.containsKey(newState)) {
+						exploredStates.put(newState, newPath);
+						queue.add(newState);
+					}
+				}
 			}
 		}
-
-		System.out.println(bestPath.actions);
-		System.out.println(bestPath.cost);
-		System.out.println("End of plan computation");
-		return new Plan(v.getCurrentCity(), bestPath.actions).seal();
+		
+		// Never gonna happen.
+		return null;
 	}
 
 	static Plan astar(Vehicle v, TaskSet tasks) {
@@ -133,10 +110,8 @@ enum Algorithm {
 		Set<State> closed = new HashSet<State>();
 
 		// List<Action> l = new ArrayList<Action>();
-		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet
-				.create(new Task[0]) : v.getCurrentTasks();
-				AStarState current = new AStarState(v.getCurrentCity(), tasks,
-				initialCarriedTasks, v.capacity());
+		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet.create(new Task[0]) : v.getCurrentTasks();
+		AStarState current = new AStarState(v.getCurrentCity(), tasks, initialCarriedTasks, v.capacity());
 		current.sethValue();
 		opened.add(current);
 
