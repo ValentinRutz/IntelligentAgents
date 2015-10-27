@@ -253,6 +253,7 @@ class AStarState extends State {
 		next.carriedTasks.add(t);
 		next.remainingTasks.remove(t);
 		next.capacity -= t.weight;
+		next.sethValue();
 		return next;
 	}
 
@@ -268,6 +269,7 @@ class AStarState extends State {
 		next.carriedTasks.remove(t);
 		assert (!(carriedTasks.contains(t) || remainingTasks.contains(t)));
 		next.capacity += t.weight;
+		next.sethValue();
 		return next;
 	}
 
