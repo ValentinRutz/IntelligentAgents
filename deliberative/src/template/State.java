@@ -274,6 +274,12 @@ class StateComparator implements Comparator<AStarState> {
 	public int compare(AStarState o1, AStarState o2) {
 		// TODO Auto-generated method stub
 
-		return (int) (o1.gethValue() - o2.gethValue());
+
+		if (o1.gethValue() < o2.gethValue()) {
+			return -1;
+		} else if (o1.gethValue() == o2.gethValue()) {
+			return 0;
+		} else
+			return 1;
 	}
 }
