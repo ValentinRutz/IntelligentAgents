@@ -49,8 +49,10 @@ enum Algorithm {
 		System.out.println("Beginning of plan computation with BFS");
 
 		Map<State, Path> exploredStates = new HashMap<State, Path>();
-		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet.create(new Task[0]) : v.getCurrentTasks();
-		State current = new BFSState(v.getCurrentCity(), tasks, initialCarriedTasks, v.capacity());
+		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet
+				.create(new Task[0]) : v.getCurrentTasks();
+		State current = new BFSState(v.getCurrentCity(), tasks,
+				initialCarriedTasks, v.capacity());
 
 		Queue<State> queue = new LinkedList<State>();
 		queue.add(current);
@@ -59,14 +61,21 @@ enum Algorithm {
 
 		while (!queue.isEmpty()) {
 			current = queue.poll();
+
 			Path parentsPath = exploredStates.get(current);
 
 			// Final State since we use BFS, we arrived with the minimal number
 			// of actions to that state so we can directly return
 			if (current.isFinalState()) {
-				System.out.println(parentsPath.actions);
-				System.out.println(parentsPath.actions.size());
-				System.out.println("End of plan computation with BFS");
+
+				System.out.println("BFS Explored states "
+						+ exploredStates.size());
+				System.out.println("BFS opened states "
+						+ (exploredStates.size()-queue.size()));
+				System.out.println("Plan size "+parentsPath.actions.size());
+				// System.out.println(parentsPath.actions);
+				// System.out.println(parentsPath.actions.size());
+				// System.out.println("End of plan computation with BFS");
 				return new Plan(v.getCurrentCity(), parentsPath.actions).seal();
 
 				// Not in a final state.
@@ -82,30 +91,33 @@ enum Algorithm {
 					newPath = new Path(parentsPath);
 					pathTo = current.city.pathTo(t.pickupCity);
 					// Keep that neighbor in mind
-					if (!current.city.equals(t.pickupCity) && current.city.hasNeighbor(pathTo.get(0)))
+					if (!current.city.equals(t.pickupCity)
+							&& current.city.hasNeighbor(pathTo.get(0)))
 						relevantNeighbors.add(pathTo.get(0));
 					// Pickup all the tasks
 					else if (current.canPickup(t)) {
 						newState = current.pickup(t, newPath);
-						if (!(newState == null || exploredStates.containsKey(newState))) {
+						if (!(newState == null || exploredStates
+								.containsKey(newState))) {
 							exploredStates.put(newState, newPath);
 							queue.add(newState);
 						}
 					}
 				}
 
-
 				for (Task t : current.carriedTasks) {
 					newState = null;
 					newPath = new Path(parentsPath);
 					pathTo = current.city.pathTo(t.deliveryCity);
-					if (!current.city.equals(t.deliveryCity) && current.city.hasNeighbor(pathTo.get(0)))
+					if (!current.city.equals(t.deliveryCity)
+							&& current.city.hasNeighbor(pathTo.get(0)))
 						relevantNeighbors.add(pathTo.get(0));
-					
+
 					// Deliver all the tasks
 					else if (current.canDeliver(t)) {
 						newState = current.deliver(t, newPath);
-						if (!(newState == null || exploredStates.containsKey(newState))) {
+						if (!(newState == null || exploredStates
+								.containsKey(newState))) {
 							exploredStates.put(newState, newPath);
 							queue.add(newState);
 						}
@@ -115,7 +127,8 @@ enum Algorithm {
 				for (City neighbor : relevantNeighbors) {
 					newPath = new Path(parentsPath);
 					newState = current.move(neighbor, newPath);
-					if (!(newState == null || exploredStates.containsKey(newState))) {
+					if (!(newState == null || exploredStates
+							.containsKey(newState))) {
 						exploredStates.put(newState, newPath);
 						queue.add(newState);
 					}
@@ -146,7 +159,7 @@ enum Algorithm {
 		exploredStates.put(current, new Path());
 
 		Path bestPath = null;
-
+		int counter = 0;
 		while (!opened.isEmpty()) {
 			current = opened.poll();
 
@@ -172,31 +185,44 @@ enum Algorithm {
 						neighbor = current.deliver(t, parentPath);
 					}
 
-					if (exploredStates.containsKey(neighbor)) {
-						// we have arrived in a previously visited state, but
-						// this time with lower cost
-						if (exploredStates.get(neighbor).cost > parentPath.cost) {
+					if (!closed.contains(neighbor)) {
 
-							// update the g cost with the new one (better one)
-							exploredStates.put(neighbor, parentPath);
+						boolean add=true;
+						if (exploredStates.containsKey(neighbor)) {
+							// we have arrived in a previously visited state,
+							// but
+							// this time with lower cost
+							add=false;
+							if (exploredStates.get(neighbor).cost > parentPath.cost) {
 
-							if (closed.contains(neighbor)) {
-								closed.remove(neighbor);
-							}
-							if (opened.contains(neighbor)) {
-								opened.remove(neighbor);
+								// update the g cost with the new one (better
+								// one)
+								exploredStates.put(neighbor, parentPath);
+
+//								if (closed.contains(neighbor)) {
+//									counter++;
+//									// System.out.println("HERE!!");
+//									closed.remove(neighbor);
+//								}
+								
+								
+								if (!closed.contains(neighbor)) {
+									opened.remove(neighbor);
+								}
+								add=true;
 							}
 
 						}
+						
+						
+						if (neighbor != null && add ) {
+							exploredStates.put(neighbor, parentPath);
+							double fValue = parentPath.cost
+									+ neighbor.gethValue();
+							neighbor.setfValue(fValue);
+							opened.add(neighbor);
 
-					}
-
-					if (neighbor != null && !opened.contains(neighbor)
-							&& !closed.contains(neighbor)) {
-						exploredStates.put(neighbor, parentPath);
-						double fValue = parentPath.cost + neighbor.gethValue();
-						neighbor.setfValue(fValue);
-						opened.add(neighbor);
+						}
 
 					}
 
@@ -204,6 +230,13 @@ enum Algorithm {
 			}
 
 		}
+
+		if (counter > 0) {
+			System.out.println("Number of here's " + counter);
+		}
+		System.out.println("A-Star explored states " + exploredStates.size());
+		System.out.println("A-star closed states " + closed.size());
+		System.out.println("Plan size " + bestPath.actions.size());
 
 		return new Plan(v.getCurrentCity(), bestPath.actions).seal();
 
