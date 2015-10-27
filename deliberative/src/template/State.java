@@ -190,17 +190,23 @@ class BFSState extends State {
 class AStarState extends State {
 	
 	protected double hValue;
+	protected double fValue;
+
+	
+
 
 	public AStarState(City city, TaskSet remainingTasks, TaskSet carriedTasks, int capacity) {
 		super(city, remainingTasks, carriedTasks, capacity);
+		sethValue();
+		
 	}
 	
 	public double gethValue() {
 		return hValue;
 	}
 
-	public void sethValue() {
-		// set F to the cost of the currently most expensive task
+	private void sethValue() {
+		// set H to the cost of the currently most expensive task
 		double maxCost = 0;
 
 		for (Task t : remainingTasks) {
@@ -221,9 +227,17 @@ class AStarState extends State {
 		this.hValue = maxCost;
 
 	}
+	
+	public double getfValue() {
+		return fValue;
+	}
 
-	State pickup(Task t, Path p) {
-		State next = clone();
+	public void setfValue(double fValue) {
+		this.fValue = fValue;
+	}
+
+	AStarState pickup(Task t, Path p) {
+		AStarState next = clone();
 		next.move(t.pickupCity, p);
 		p.actions.add(new Pickup(t));
 		next.carriedTasks.add(t);
@@ -236,9 +250,8 @@ class AStarState extends State {
 		return remainingTasks.contains(t) && capacity - t.weight >= 0;
 	}
 
-	State deliver(Task t, Path p) {
-		assert (carriedTasks.contains(t) && !remainingTasks.contains(t));
-		State next = clone();
+	AStarState deliver(Task t, Path p) {
+		AStarState next = clone();
 		next.move(t.deliveryCity, p);
 		p.actions.add(new Delivery(t));
 		next.carriedTasks.remove(t);
@@ -251,7 +264,7 @@ class AStarState extends State {
 		return carriedTasks.contains(t);
 	}
 
-	public State clone() {
+	public AStarState clone() {
 		return new AStarState(city, remainingTasks, carriedTasks, capacity);
 	}
 
@@ -275,9 +288,9 @@ class StateComparator implements Comparator<AStarState> {
 		// TODO Auto-generated method stub
 
 
-		if (o1.gethValue() < o2.gethValue()) {
+		if (o1.getfValue() < o2.getfValue()) {
 			return -1;
-		} else if (o1.gethValue() == o2.gethValue()) {
+		} else if (o1.getfValue() == o2.getfValue()) {
 			return 0;
 		} else
 			return 1;
