@@ -45,8 +45,13 @@ enum Algorithm {
 		}
 		return plan;
 	}
-
-	// BFS search for best plan
+//
+//	// BFS search for best plan
+//	static Plan bfs(Vehicle v, TaskSet tasks) {
+//		
+//	}
+	
+	
 	static Plan bfs(Vehicle v, TaskSet tasks) {
 		System.out.println("Beginning of plan computation");
 		// List<Action> l = new ArrayList<Action>();
@@ -54,7 +59,7 @@ enum Algorithm {
 		// Set<State> cycle = new HashSet<State>();
 		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet
 				.create(new Task[0]) : v.getCurrentTasks();
-		State current = new State(v.getCurrentCity(), tasks,
+		State current = new BFSState(v.getCurrentCity(), tasks,
 				initialCarriedTasks, v.capacity());
 
 		Queue<State> queue = new LinkedList<State>();
@@ -123,14 +128,14 @@ enum Algorithm {
 	}
 
 	static Plan astar(Vehicle v, TaskSet tasks) {
-		Comparator<State> comparator = new StateComparator();
-		PriorityQueue<State> opened = new PriorityQueue<State>(10, comparator);
+		Comparator<AStarState> comparator = new StateComparator();
+		PriorityQueue<AStarState> opened = new PriorityQueue<AStarState>(10, comparator);
 		Set<State> closed = new HashSet<State>();
 
 		// List<Action> l = new ArrayList<Action>();
 		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet
 				.create(new Task[0]) : v.getCurrentTasks();
-		State current = new State(v.getCurrentCity(), tasks,
+				AStarState current = new AStarState(v.getCurrentCity(), tasks,
 				initialCarriedTasks, v.capacity());
 		current.sethValue();
 		opened.add(current);

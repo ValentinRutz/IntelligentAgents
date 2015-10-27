@@ -43,41 +43,12 @@ class Path {
 
 }
 
-class State {
-	private City city;
+abstract class State {
+	protected City city;
 
-	private TaskSet remainingTasks;
-	private TaskSet carriedTasks;
-	private int capacity;
-
-	private double hValue;
-
-	public double gethValue() {
-		return hValue;
-	}
-
-	public void sethValue() {
-		// set F to the cost of the currently most expensive task
-		double maxCost = 0;
-
-		for (Task t : remainingTasks) {
-			double currCost = city.distanceTo(t.pickupCity);
-			currCost += t.pickupCity.distanceTo(t.deliveryCity);
-			if (currCost > maxCost)
-				maxCost = currCost;
-
-		}
-
-		for (Task t : carriedTasks) {
-			double currCost = city.distanceTo(t.deliveryCity);
-			if (currCost > maxCost)
-				maxCost = currCost;
-
-		}
-
-		this.hValue = maxCost;
-
-	}
+	protected TaskSet remainingTasks;
+	protected TaskSet carriedTasks;
+	protected int capacity;
 
 	public State(City city, TaskSet remainingTasks, TaskSet carriedTasks,
 			int capacity) {
@@ -107,51 +78,21 @@ class State {
 		return union(remainingTasks, carriedTasks);
 	}
 
-	State pickup(Task t, Path p) {
-		State next = clone();
-		next.move(t.pickupCity, p);
-		p.actions.add(new Pickup(t));
-		next.carriedTasks.add(t);
-		next.remainingTasks.remove(t);
-		next.capacity -= t.weight;
-		return next;
-	}
+	abstract State pickup(Task t, Path p);
 
 	boolean canPickup(Task t) {
 		return remainingTasks.contains(t) && capacity - t.weight >= 0;
 	}
 
-	State deliver(Task t, Path p) {
-		assert (carriedTasks.contains(t) && !remainingTasks.contains(t));
-		State next = clone();
-		next.move(t.deliveryCity, p);
-		p.actions.add(new Delivery(t));
-		next.carriedTasks.remove(t);
-		assert (!(carriedTasks.contains(t) || remainingTasks.contains(t)));
-		next.capacity += t.weight;
-		return next;
-	}
+	abstract State deliver(Task t, Path p);
 
 	boolean canDeliver(Task t) {
 		return carriedTasks.contains(t);
 	}
 
-	public State clone() {
-		return new State(city, remainingTasks, carriedTasks, capacity);
-	}
+	public abstract State clone();
 
-	private State move(City endCity, Path p) {
-		if (!endCity.equals(city)) {
-			City currentCity = city;
-			for (City c : city.pathTo(endCity)) {
-				p.actions.add(new Move(c));
-				p.cost += currentCity.distanceTo(c);
-				currentCity = c;
-			}
-			city = endCity;
-		}
-		return this;
-	}
+	protected abstract State move(City endCity, Path p);
 
 	@Override
 	public String toString() {
@@ -215,9 +156,122 @@ class State {
 	}
 }
 
-class StateComparator implements Comparator<State> {
+class BFSState extends State {
+
+	public BFSState(City city, TaskSet remainingTasks, TaskSet carriedTasks, int capacity) {
+		super(city, remainingTasks, carriedTasks, capacity);
+	}
+
 	@Override
-	public int compare(State o1, State o2) {
+	State pickup(Task t, Path p) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	State deliver(Task t, Path p) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public State clone() {
+		return new BFSState(city, remainingTasks, carriedTasks, capacity);
+	}
+
+	@Override
+	protected State move(City endCity, Path p) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+}
+
+class AStarState extends State {
+	
+	protected double hValue;
+
+	public AStarState(City city, TaskSet remainingTasks, TaskSet carriedTasks, int capacity) {
+		super(city, remainingTasks, carriedTasks, capacity);
+	}
+	
+	public double gethValue() {
+		return hValue;
+	}
+
+	public void sethValue() {
+		// set F to the cost of the currently most expensive task
+		double maxCost = 0;
+
+		for (Task t : remainingTasks) {
+			double currCost = city.distanceTo(t.pickupCity);
+			currCost += t.pickupCity.distanceTo(t.deliveryCity);
+			if (currCost > maxCost)
+				maxCost = currCost;
+
+		}
+
+		for (Task t : carriedTasks) {
+			double currCost = city.distanceTo(t.deliveryCity);
+			if (currCost > maxCost)
+				maxCost = currCost;
+
+		}
+
+		this.hValue = maxCost;
+
+	}
+
+	State pickup(Task t, Path p) {
+		State next = clone();
+		next.move(t.pickupCity, p);
+		p.actions.add(new Pickup(t));
+		next.carriedTasks.add(t);
+		next.remainingTasks.remove(t);
+		next.capacity -= t.weight;
+		return next;
+	}
+
+	boolean canPickup(Task t) {
+		return remainingTasks.contains(t) && capacity - t.weight >= 0;
+	}
+
+	State deliver(Task t, Path p) {
+		assert (carriedTasks.contains(t) && !remainingTasks.contains(t));
+		State next = clone();
+		next.move(t.deliveryCity, p);
+		p.actions.add(new Delivery(t));
+		next.carriedTasks.remove(t);
+		assert (!(carriedTasks.contains(t) || remainingTasks.contains(t)));
+		next.capacity += t.weight;
+		return next;
+	}
+
+	boolean canDeliver(Task t) {
+		return carriedTasks.contains(t);
+	}
+
+	public State clone() {
+		return new AStarState(city, remainingTasks, carriedTasks, capacity);
+	}
+
+	protected State move(City endCity, Path p) {
+		if (!endCity.equals(city)) {
+			City currentCity = city;
+			for (City c : city.pathTo(endCity)) {
+				p.actions.add(new Move(c));
+				p.cost += currentCity.distanceTo(c);
+				currentCity = c;
+			}
+			city = endCity;
+		}
+		return this;
+	}
+}
+
+class StateComparator implements Comparator<AStarState> {
+	@Override
+	public int compare(AStarState o1, AStarState o2) {
 		// TODO Auto-generated method stub
 
 		return (int) (o1.gethValue() - o2.gethValue());
