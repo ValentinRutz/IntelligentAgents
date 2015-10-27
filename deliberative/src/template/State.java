@@ -81,13 +81,13 @@ abstract class State {
 	abstract State pickup(Task t, Path p);
 
 	boolean canPickup(Task t) {
-		return remainingTasks.contains(t) && capacity - t.weight >= 0;
+		return remainingTasks.contains(t) && t.pickupCity.equals(city) && capacity - t.weight >= 0;
 	}
 
 	abstract State deliver(Task t, Path p);
 
 	boolean canDeliver(Task t) {
-		return carriedTasks.contains(t);
+		return carriedTasks.contains(t) && t.deliveryCity.equals(city);
 	}
 
 	public abstract State clone();
@@ -164,14 +164,21 @@ class BFSState extends State {
 
 	@Override
 	State pickup(Task t, Path p) {
-		// TODO Auto-generated method stub
-		return null;
+		State next = clone();
+		p.actions.add(new Pickup(t));
+		next.carriedTasks.add(t);
+		next.remainingTasks.remove(t);
+		next.capacity -= t.weight;
+		return next;
 	}
 
 	@Override
 	State deliver(Task t, Path p) {
-		// TODO Auto-generated method stub
-		return null;
+		State next = clone();
+		p.actions.add(new Delivery(t));
+		next.carriedTasks.remove(t);
+		next.capacity += t.weight;
+		return next;
 	}
 
 	@Override
@@ -180,11 +187,14 @@ class BFSState extends State {
 	}
 
 	@Override
-	protected State move(City endCity, Path p) {
-		// TODO Auto-generated method stub
-		return null;
+	protected State move(City neighbor, Path p) {
+		State next = clone();
+		if (!neighbor.equals(city)) {
+			p.actions.add(new Move(neighbor));
+			next.city = neighbor;
+		}
+		return next;
 	}
-	
 }
 
 class AStarState extends State {
@@ -252,6 +262,7 @@ class AStarState extends State {
 
 	AStarState deliver(Task t, Path p) {
 		AStarState next = clone();
+
 		next.move(t.deliveryCity, p);
 		p.actions.add(new Delivery(t));
 		next.carriedTasks.remove(t);
@@ -289,6 +300,7 @@ class StateComparator implements Comparator<AStarState> {
 
 
 		if (o1.getfValue() < o2.getfValue()) {
+
 			return -1;
 		} else if (o1.getfValue() == o2.getfValue()) {
 			return 0;
