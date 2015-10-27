@@ -45,13 +45,13 @@ enum Algorithm {
 		}
 		return plan;
 	}
-//
-//	// BFS search for best plan
-//	static Plan bfs(Vehicle v, TaskSet tasks) {
-//		
-//	}
-	
-	
+
+	//
+	// // BFS search for best plan
+	// static Plan bfs(Vehicle v, TaskSet tasks) {
+	//
+	// }
+
 	static Plan bfs(Vehicle v, TaskSet tasks) {
 		System.out.println("Beginning of plan computation");
 		// List<Action> l = new ArrayList<Action>();
@@ -102,7 +102,6 @@ enum Algorithm {
 					}
 
 					if (exploredStates.containsKey(newState)) {
-
 						// we have arrived in a previously visited state, but
 						// this time with lower cost
 						if (exploredStates.get(newState).cost > previous.cost) {
@@ -129,34 +128,82 @@ enum Algorithm {
 
 	static Plan astar(Vehicle v, TaskSet tasks) {
 		Comparator<AStarState> comparator = new StateComparator();
-		PriorityQueue<AStarState> opened = new PriorityQueue<AStarState>(10, comparator);
-		Set<State> closed = new HashSet<State>();
+		PriorityQueue<AStarState> opened = new PriorityQueue<AStarState>(10,
+				comparator);
+		Set<AStarState> closed = new HashSet<AStarState>();
 
 		// List<Action> l = new ArrayList<Action>();
 		TaskSet initialCarriedTasks = (v.getCurrentTasks() == null) ? TaskSet
 				.create(new Task[0]) : v.getCurrentTasks();
-				AStarState current = new AStarState(v.getCurrentCity(), tasks,
+
+		AStarState current = new AStarState(v.getCurrentCity(), tasks,
 				initialCarriedTasks, v.capacity());
-		current.sethValue();
 		opened.add(current);
 
-		while (!opened.peek().isFinalState()) {
+		Map<State, Path> exploredStates = new HashMap<State, Path>();
+		exploredStates.put(current, new Path());
+
+		Path bestPath = null;
+
+		while (!opened.isEmpty()) {
 			current = opened.poll();
-			closed.add(current);
-			State neighbor = null;
-			for (Task t : current.getAllTasks()) {
-				/*
-				 * if (current.canPickup(t)) { neighbor = current.pickup(t); }
-				 * else if (current.canDeliver(t)) { neighbor =
-				 * current.deliver(t); }
-				 */
-				if (opened.contains(neighbor)) {
+
+			if (current.isFinalState()) {
+				bestPath = new Path(exploredStates.get(current));
+				break;
+
+			} else {
+
+				closed.add(current);
+
+				for (Task t : current.getAllTasks()) {
+					AStarState neighbor = null;
+
+					Path parentPath = new Path(exploredStates.get(current));
+
+					if (current.canPickup(t)) {
+
+						// inside pickUp we update the parent's path
+						// movementcost(current, neighbor)
+						neighbor = current.pickup(t, parentPath);
+					} else if (current.canDeliver(t)) {
+						neighbor = current.deliver(t, parentPath);
+					}
+
+					if (exploredStates.containsKey(neighbor)) {
+						// we have arrived in a previously visited state, but
+						// this time with lower cost
+						if (exploredStates.get(neighbor).cost > parentPath.cost) {
+
+							// update the g cost with the new one (better one)
+							exploredStates.put(neighbor, parentPath);
+
+							if (closed.contains(neighbor)) {
+								closed.remove(neighbor);
+							}
+							if (opened.contains(neighbor)) {
+								opened.remove(neighbor);
+							}
+
+						}
+
+					}
+
+					if (neighbor != null && !opened.contains(neighbor)
+							&& !closed.contains(neighbor)) {
+						exploredStates.put(neighbor, parentPath);
+						double fValue = parentPath.cost + neighbor.gethValue();
+						neighbor.setfValue(fValue);
+						opened.add(neighbor);
+
+					}
 
 				}
-
 			}
 
 		}
+
+		return new Plan(v.getCurrentCity(), bestPath.actions).seal();
 
 		// OPEN = priority queue containing START
 		// CLOSED = empty set
@@ -178,6 +225,5 @@ enum Algorithm {
 		// reconstruct reverse path from goal to start
 		// by following parent pointers
 		//
-		return null;
 	}
 }
