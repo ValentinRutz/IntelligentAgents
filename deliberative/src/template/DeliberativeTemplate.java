@@ -50,6 +50,9 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	@Override
 	public Plan plan(Vehicle vehicle, TaskSet tasks) {
 		Plan plan;
+		System.out.println("Computing plan for vehicle " + vehicle.name());
+		System.out.println("Vehicle has carried tasks: " + vehicle.getCurrentTasks());
+		System.out.println("Vehicle has remaining tasks: "+ tasks);
 
 		// Compute the plan with the selected algorithm.
 		switch (algorithm) {
