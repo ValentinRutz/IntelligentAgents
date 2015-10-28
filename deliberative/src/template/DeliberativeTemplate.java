@@ -39,7 +39,8 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 
 		// initialize the planner
 		int capacity = agent.vehicles().get(0).capacity();
-		String algorithmName = agent.readProperty("algorithm", String.class, "NAIVE");
+		String algorithmName = agent.readProperty("algorithm", String.class,
+				"NAIVE");
 
 		// Throws IllegalArgumentException if algorithm is unknown
 		algorithm = Algorithm.valueOf(algorithmName.toUpperCase());
@@ -51,8 +52,11 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	public Plan plan(Vehicle vehicle, TaskSet tasks) {
 		Plan plan;
 		System.out.println("Computing plan for vehicle " + vehicle.name());
-		System.out.println("Vehicle has carried tasks: " + vehicle.getCurrentTasks());
-		System.out.println("Vehicle has remaining tasks: "+ tasks);
+		System.out.println("Vehicle has carried tasks: "
+				+ vehicle.getCurrentTasks());
+		System.out.println("Vehicle has remaining tasks: " + tasks);
+
+		long startTime = System.currentTimeMillis();
 
 		// Compute the plan with the selected algorithm.
 		switch (algorithm) {
@@ -71,6 +75,10 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		default:
 			throw new AssertionError("Should not happen.");
 		}
+
+		long stopTime = System.currentTimeMillis();
+		long elapsedTime = stopTime - startTime;
+		System.out.println("It took " + elapsedTime/1000.0 + " seconds to compute");
 		return plan;
 	}
 
