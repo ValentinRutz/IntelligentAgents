@@ -71,8 +71,8 @@ enum Algorithm {
 				System.out.println("BFS Explored states "
 						+ exploredStates.size());
 				System.out.println("BFS opened states "
-						+ (exploredStates.size()-queue.size()));
-				System.out.println("Plan size "+parentsPath.actions.size());
+						+ (exploredStates.size() - queue.size()));
+				System.out.println("Plan size " + parentsPath.actions.size());
 				// System.out.println(parentsPath.actions);
 				// System.out.println(parentsPath.actions.size());
 				// System.out.println("End of plan computation with BFS");
@@ -142,8 +142,9 @@ enum Algorithm {
 	}
 
 	static Plan astar(Vehicle v, TaskSet tasks) {
+
 		Comparator<AStarState> comparator = new StateComparator();
-		PriorityQueue<AStarState> opened = new PriorityQueue<AStarState>(10,
+		PriorityQueue<AStarState> opened = new PriorityQueue<AStarState>(50000,
 				comparator);
 		Set<AStarState> closed = new HashSet<AStarState>();
 
@@ -162,6 +163,8 @@ enum Algorithm {
 		int counter = 0;
 		while (!opened.isEmpty()) {
 			current = opened.poll();
+			// System.out.println("Plan Length " +
+			// exploredStates.get(current).actions.size());
 
 			if (current.isFinalState()) {
 				bestPath = new Path(exploredStates.get(current));
@@ -171,53 +174,52 @@ enum Algorithm {
 
 				closed.add(current);
 
+				AStarState neighbor=null;
+				Path newPath = null;
 				for (Task t : current.getAllTasks()) {
-					AStarState neighbor = null;
+					neighbor = null;
 
-					Path parentPath = new Path(exploredStates.get(current));
+					newPath = new Path(exploredStates.get(current));
 
 					if (current.canPickup(t)) {
 
 						// inside pickUp we update the parent's path
 						// movementcost(current, neighbor)
-						neighbor = current.pickup(t, parentPath);
+						neighbor = current.pickup(t, newPath);
 					} else if (current.canDeliver(t)) {
-						neighbor = current.deliver(t, parentPath);
+						neighbor = current.deliver(t, newPath);
 					}
 
 					if (!closed.contains(neighbor)) {
 
-						boolean add=true;
+						boolean add = true;
 						if (exploredStates.containsKey(neighbor)) {
 							// we have arrived in a previously visited state,
 							// but
 							// this time with lower cost
-							add=false;
-							if (exploredStates.get(neighbor).cost > parentPath.cost) {
+							add = false;
+							if (exploredStates.get(neighbor).cost > newPath.cost) {
 
 								// update the g cost with the new one (better
 								// one)
-								exploredStates.put(neighbor, parentPath);
+								exploredStates.put(neighbor, newPath);
 
-//								if (closed.contains(neighbor)) {
-//									counter++;
-//									// System.out.println("HERE!!");
-//									closed.remove(neighbor);
-//								}
-								
-								
-								if (!closed.contains(neighbor)) {
-									opened.remove(neighbor);
-								}
-								add=true;
+								// if (closed.contains(neighbor)) {
+								// counter++;
+								// // System.out.println("HERE!!");
+								// closed.remove(neighbor);
+								// }
+
+								opened.remove(neighbor);
+
+								add = true;
 							}
 
 						}
-						
-						
-						if (neighbor != null && add ) {
-							exploredStates.put(neighbor, parentPath);
-							double fValue = parentPath.cost
+
+						if (neighbor != null && add) {
+							exploredStates.put(neighbor, newPath);
+							double fValue = newPath.cost
 									+ neighbor.gethValue();
 							neighbor.setfValue(fValue);
 							opened.add(neighbor);
@@ -240,25 +242,5 @@ enum Algorithm {
 
 		return new Plan(v.getCurrentCity(), bestPath.actions).seal();
 
-		// OPEN = priority queue containing START
-		// CLOSED = empty set
-		// while lowest rank in OPEN is not the GOAL:
-		// current = remove lowest rank item from OPEN
-		// add current to CLOSED
-		// for neighbors of current:
-		// cost = g(current) + movementcost(current, neighbor)
-		// if neighbor in OPEN and cost less than g(neighbor):
-		// remove neighbor from OPEN, because new path is better
-		// if neighbor in CLOSED and cost less than g(neighbor): **
-		// remove neighbor from CLOSED
-		// if neighbor not in OPEN and neighbor not in CLOSED:
-		// set g(neighbor) to cost
-		// add neighbor to OPEN
-		// set priority queue rank to g(neighbor) + h(neighbor)
-		// set neighbor's parent to current
-		//
-		// reconstruct reverse path from goal to start
-		// by following parent pointers
-		//
 	}
 }
