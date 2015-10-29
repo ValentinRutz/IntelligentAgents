@@ -14,7 +14,7 @@
 	
 	<!-- define task distribution -->
 
-	<tasks number="11" rngSeed="23456">
+	<tasks number="10" rngSeed="23456">
 		<!--
 			the probabilities, rewards and weight of tasks
 		-->
