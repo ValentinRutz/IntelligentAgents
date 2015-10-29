@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -81,32 +82,57 @@ enum Algorithm {
 			} else {
 				State newState = null;
 				Path newPath = null;
-				
-				// Move to all neighbors
-				for (City neighbor : current.city.neighbors()) {
-					newPath = new Path(parentsPath);
-					newState = current.move(neighbor, newPath);
-					if (!exploredStates.containsKey(newState)) {
-						exploredStates.put(newState, newPath);
-						queue.add(newState);
-					}
-				}
-				
-				// Pickup all the tasks
-				// Deliver all the tasks
-				for (Task t : current.getAllTasks()) {
+				List<City> pathTo = null;
+				Set<City> relevantNeighbors = new HashSet<City>();
+
+				// Move to all neighbors that are relevant
+				for (Task t : current.remainingTasks) {
 					newState = null;
 					newPath = new Path(parentsPath);
-					if (current.canPickup(t)) {
+					pathTo = current.city.pathTo(t.pickupCity);
+					// Keep that neighbor in mind
+					if (!current.city.equals(t.pickupCity)
+							&& current.city.hasNeighbor(pathTo.get(0)))
+						relevantNeighbors.add(pathTo.get(0));
+					// Pickup all the tasks
+					else if (current.canPickup(t)) {
 						newState = current.pickup(t, newPath);
-					} else if (current.canDeliver(t)) {
-						newState = current.deliver(t, newPath);
+						if (!(newState == null || exploredStates
+								.containsKey(newState))) {
+							exploredStates.put(newState, newPath);
+							queue.add(newState);
+						}
 					}
-					
-					if (newState != null && !exploredStates.containsKey(newState)) {
+				}
+
+				for (Task t : current.carriedTasks) {
+					newState = null;
+					newPath = new Path(parentsPath);
+					pathTo = current.city.pathTo(t.deliveryCity);
+					if (!current.city.equals(t.deliveryCity)
+							&& current.city.hasNeighbor(pathTo.get(0)))
+						relevantNeighbors.add(pathTo.get(0));
+
+					// Deliver all the tasks
+					else if (current.canDeliver(t)) {
+						newState = current.deliver(t, newPath);
+						if (!(newState == null || exploredStates
+								.containsKey(newState))) {
+							exploredStates.put(newState, newPath);
+							queue.add(newState);
+						}
+					}
+				}
+
+				for (City neighbor : relevantNeighbors) {
+					newPath = new Path(parentsPath);
+					newState = current.move(neighbor, newPath);
+					if (!(newState == null || exploredStates
+							.containsKey(newState))) {
 						exploredStates.put(newState, newPath);
 						queue.add(newState);
 					}
+					newState = null;
 				}
 			}
 		}
