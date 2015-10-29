@@ -15,3 +15,7 @@ hs_err_pid*
 .DS_Store
 *.log
 history.xml
+bin/
+.project
+.settings
+
