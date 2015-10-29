@@ -1,0 +1,143 @@
+For capacity 30, on Switzerland, A* works fast for 9, in less than a minute (40) for 10, ~3 mins for 11
+				BFS works fast for 11
+
+<stat rank="1" agent="deliberative-astar">
+			<total-tasks value="10"/>
+			<total-distance value="1820.0"/>
+			<total-cost value="9100"/>
+			<total-reward value="537186"/>
+			<total-profit value="528086"/>
+		</stat>
+	<stat rank="1" agent="deliberative-bfs">
+			<total-tasks value="10"/>
+			<total-distance value="1850.0"/>
+			<total-cost value="9250"/>
+			<total-reward value="537186"/>
+			<total-profit value="527936"/>
+		</stat>
+
+<stat rank="1" agent="deliberative-astar">
+			<total-tasks value="9"/>
+			<total-distance value="1720.0"/>
+			<total-cost value="8600"/>
+			<total-reward value="467769"/>
+			<total-profit value="459169"/>
+		</stat>
+
+<stat rank="1" agent="deliberative-bfs">
+			<total-tasks value="9"/>
+			<total-distance value="1720.0"/>
+			<total-cost value="8600"/>
+			<total-reward value="467769"/>
+			<total-profit value="459169"/>
+		</stat>
+
+<stat rank="1" agent="deliberative-astar">
+			<total-tasks value="8"/>
+			<total-distance value="1710.0"/>
+			<total-cost value="8550"/>
+			<total-reward value="398352"/>
+			<total-profit value="389802"/>
+		</stat>
+
+	<stat rank="1" agent="deliberative-bfs">
+			<total-tasks value="8"/>
+			<total-distance value="1710.0"/>
+			<total-cost value="8550"/>
+			<total-reward value="398352"/>
+			<total-profit value="389802"/>
+		</stat>
+FOR CAPACITY OF 6!!!!
+
+<stat rank="1" agent="deliberative-astar">
+			<total-tasks value="11"/>
+			<total-distance value="2500.0"/>
+			<total-cost value="12500"/>
+			<total-reward value="592332"/>
+			<total-profit value="579832"/>
+		</stat>
+
+	<stat rank="1" agent="deliberative-bfs">
+			<total-tasks value="11"/>
+			<total-distance value="2640.0"/>
+			<total-cost value="13200"/>
+			<total-reward value="592332"/>
+			<total-p
+
+<stat rank="1" agent="deliberative-astar">
+			<total-tasks value="12"/>
+			<total-distance value="2520.0"/>
+			<total-cost value="12600"/>
+			<total-reward value="661749"/>
+			<total-profit value="649149"/>
+		</stat>
+
+
+	<statistics>
+		<stat rank="1" agent="deliberative-bfs">
+			<total-tasks value="12"/>
+			<total-distance value="2550.0"/>
+			<total-cost value="12750"/>
+			<total-reward value="661749"/>
+			<total-profit value="648999"/>
+		</stat>
+	</statistics>
+
+<stat rank="1" agent="deliberative-astar">
+			<total-tasks value="13"/>
+			<total-distance value="2570.0"/>
+			<total-cost value="12850"/>
+			<total-reward value="702624"/>
+			<total-profit value="689774"/>
+		</stat>
+
+
+
+<stat rank="1" agent="deliberative-bfs">
+			<total-tasks value="13"/>
+			<total-distance value="2570.0"/>
+			<total-cost value="12850"/>
+			<total-reward value="702624"/>
+			<total-profit value="689774"/>
+		</stat>
+
+
+
+FRANCE!
+
+	<stat rank="1" agent="deliberative-bfs">
+			<total-tasks value="10"/>
+			<total-distance value="7338.0"/>
+			<total-cost value="36690"/>
+			<total-reward value="553852"/>
+			<total-profit value="517162"/>
+		</stat>
+
+
+<stat rank="1" agent="deliberative-astar">
+			<total-tasks value="10"/>
+			<total-distance value="6890.0"/>
+			<total-cost value="34450"/>
+			<total-reward value="553852"/>
+			<total-profit value="519402"/>
+		</stat>
+
+
+<stat rank="1" agent="deliberative-bfs">
+			<total-tasks value="12"/>
+			<total-distance value="7734.0"/>
+			<total-cost value="38670"/>
+			<total-reward value="637541"/>
+			<total-profit value="598871"/>
+		</stat>
+
+
+<stat rank="1" agent="deliberative-astar">
+			<total-tasks value="12"/>
+			<total-distance value="7529.0"/>
+			<total-cost value="37645"/>
+			<total-reward value="637541"/>
+			<total-profit value="599896"/>
+		</stat>
+
+
