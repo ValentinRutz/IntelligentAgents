@@ -1,5 +1,8 @@
 package template;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,6 +20,7 @@ public class SLS {
 	static List<Plan> sls(List<Vehicle> vehicles, TaskSet tasks) {
 		Solution A = new Solution();
 		Solution Aold = new Solution();
+		List<Integer> ids = new LinkedList<Integer>();
 
 		Vehicle biggestCapacity = null;
 		for (Vehicle v : vehicles) {
@@ -24,6 +28,7 @@ public class SLS {
 			if (biggestCapacity == null || biggestCapacity.capacity() < v.capacity()) {
 				biggestCapacity = v;
 			}
+			ids.add(v.id());
 		}
 
 		if (Constraints.testCapacitySolution(biggestCapacity.capacity(), tasks)) {
@@ -48,8 +53,11 @@ public class SLS {
 				// Aold ← A
 				Aold = new Solution(A);
 
+				
+				
+				
 				// N ← ChooseNeighbours(Aold, X, D, C, f)
-				N = chooseNeighbors(Aold);
+				N = chooseNeighbors(Aold,ids);
 
 				// A ← LocalChoice(N, f)
 				A = localChoice(N);
@@ -59,9 +67,20 @@ public class SLS {
 		return solutionToPlans(A);
 	}
 
-	private static List<Solution> chooseNeighbors(Solution sol) {
-		// TODO
+	private static List<Solution> chooseNeighbors(Solution sol, List<Integer> ids) {
+		Collections.shuffle(ids);
+		int vehicleID = ids.get(0);
+		
+		List<Solution> neighbors = new ArrayList<Solution>();
+		swapTasks(vehicleID, sol, neighbors);
+		
+
 		return null;
+	}
+	
+	
+	private static void exchangeTask(int vehicleID, Solution sol, List<Solution> neighbors){
+		//TODO
 	}
 	
 	private static void swapTasks(int vehicleID, Solution sol, List<Solution> neighbors){
