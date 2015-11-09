@@ -5,11 +5,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
+import logist.plan.Action.Move;
 import logist.plan.Plan;
+import logist.plan.Action;
 import logist.simulation.Vehicle;
 import logist.task.Task;
 import logist.task.TaskSet;
+import logist.topology.Topology.City;
 import model.ActionWrapper;
 import model.Constraints;
 import model.PickupWrapper;
@@ -25,7 +29,8 @@ public class SLS {
 		Vehicle biggestCapacity = null;
 		for (Vehicle v : vehicles) {
 			A.put(v.id(), new LinkedList<ActionWrapper>());
-			if (biggestCapacity == null || biggestCapacity.capacity() < v.capacity()) {
+			if (biggestCapacity == null
+					|| biggestCapacity.capacity() < v.capacity()) {
 				biggestCapacity = v;
 			}
 			ids.add(v.id());
@@ -41,7 +46,8 @@ public class SLS {
 				l = A.get(id);
 				if (Constraints.testCapacity(biggestCapacity, a, A)) {
 					l.add(a);
-					if (Constraints.testCapacity(biggestCapacity, a.getCounterpart(), A)) {
+					if (Constraints.testCapacity(biggestCapacity,
+							a.getCounterpart(), A)) {
 						l.add(a.getCounterpart());
 					}
 				}
@@ -53,59 +59,117 @@ public class SLS {
 				// Aold ← A
 				Aold = new Solution(A);
 
-				
-				
-				
 				// N ← ChooseNeighbours(Aold, X, D, C, f)
-				N = chooseNeighbors(Aold,ids);
+				N = chooseNeighbors(Aold, ids);
 
 				// A ← LocalChoice(N, f)
-				A = localChoice(N);
+				A = localChoice(N, A);
 			}
 		}
 
 		return solutionToPlans(A);
 	}
 
-	private static List<Solution> chooseNeighbors(Solution sol, List<Integer> ids) {
+	private static List<Solution> chooseNeighbors(Solution sol,
+			List<Integer> ids) {
 		Collections.shuffle(ids);
 		int vehicleID = ids.get(0);
-		
+
 		List<Solution> neighbors = new ArrayList<Solution>();
 		swapTasks(vehicleID, sol, neighbors);
-		
+		exchangeTask(vehicleID, sol, neighbors);
 
-		return null;
+		return neighbors;
 	}
-	
-	
-	private static void exchangeTask(int vehicleID, Solution sol, List<Solution> neighbors){
-		//TODO
+
+	private static void exchangeTask(int vehicleID, Solution sol,
+			List<Solution> neighbors) {
+		// TODO
 	}
-	
-	private static void swapTasks(int vehicleID, Solution sol, List<Solution> neighbors){
-		
-		Solution neighbor=null;
+
+	private static void swapTasks(int vehicleID, Solution sol,
+			List<Solution> neighbors) {
+
+		Solution neighbor = null;
 		for (int i = 0; i < sol.get(vehicleID).size(); i++) {
-			for (int j=i+1; j < sol.get(vehicleID).size(); j++) {
+			for (int j = i + 1; j < sol.get(vehicleID).size(); j++) {
 				neighbor = new Solution(sol);
-				if(neighbor.changeTasksOrder(vehicleID, i, j)){
+				if (neighbor.changeTasksOrder(vehicleID, i, j)) {
 					neighbors.add(neighbor);
-				}			
-				
+				}
+
 			}
 		}
-		
-		
+
 	}
 
-	private static Solution localChoice(List<Solution> N) {
-		// TODO
-		return null;
+	private static Solution localChoice(List<Solution> N, Solution A) {
+		double bestCost = 0;
+		boolean firstTime = true;
+		Solution bestSolution = null;
+
+		for (Solution solution : N) {
+			if (firstTime) {
+				bestCost = solution.cost();
+				bestSolution = solution;
+				firstTime = false;
+			} else if (bestCost > solution.cost()) {
+				bestCost = solution.cost();
+				bestSolution = solution;
+			}
+
+		}
+
+		Random r = new Random();
+		double p = r.nextDouble();
+
+		if (p < 0.3 && bestSolution!=null)
+			return bestSolution;
+		else
+			return A;
 	}
 
+	
 	private static List<Plan> solutionToPlans(Solution solution) {
-		// TODO
-		return null;
+		List<Plan> result = new ArrayList<Plan>();
+		for (List<ActionWrapper> entry : solution.getSolution().values()) {
+			Plan p = null;
+			if (!entry.isEmpty()) {
+
+				ActionWrapper firstTask = entry.get(0);
+				Vehicle v = solution.getVehicle(firstTask);
+				City current = v.getCurrentCity();
+				
+				List<Action> acts = new ArrayList<Action>();
+				
+				City next = firstTask.getCity();
+
+				for (City city : current.pathTo(next)) {
+					acts.add(new Move(city));
+				}
+				
+				acts.add(firstTask.getAction());
+				
+				for (ActionWrapper actionWrapper : entry) {
+					current = next;
+					next = actionWrapper.getCity();
+					
+					for (City city : current.pathTo(next)) {
+						acts.add(new Move(city));
+					}
+					acts.add(actionWrapper.getAction());					
+				}
+				
+				
+				p = new Plan(v.getCurrentCity(),acts);
+				
+			}else {
+				p = Plan.EMPTY;
+			}
+			
+			result.add(p);
+
+		}
+		return result;
 	}
 }
