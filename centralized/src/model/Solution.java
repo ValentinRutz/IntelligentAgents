@@ -62,12 +62,20 @@ public class Solution {
 		return remainingCapacity;
 	}
 
+	public int getTime(ActionWrapper aw) {
+		return time.get(aw).intValue();
+	}
+	
 	public Map<ActionWrapper, Integer> getTime() {
 		return time;
 	}
 
 	public void setTime(Map<ActionWrapper, Integer> time) {
 		this.time = time;
+	}
+	
+	public Vehicle getVehicle(ActionWrapper aw) {
+		return vehicle.get(aw);
 	}
 
 	public Map<ActionWrapper, Vehicle> getVehicle() {
