@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import logist.simulation.Vehicle;
+import logist.topology.Topology.City;
 
 public class Solution {
 	private Map<Integer, List<ActionWrapper>> solution;
@@ -52,8 +53,8 @@ public class Solution {
 		return solution.get(id);
 	}
 
-	public int remainingCapacity(Vehicle v, List<ActionWrapper> tasks){
-		
+	public int remainingCapacity(Vehicle v, List<ActionWrapper> tasks) {
+
 		int remainingCapacity = v.capacity();
 		for (ActionWrapper aw : tasks) {
 			remainingCapacity -= aw.getWeight();
@@ -115,8 +116,8 @@ public class Solution {
 		time.put(t1, secondTaskInd + 1);
 		time.put(t2, firstTaskInd + 1);
 		solution.put(vehicleID, newList);
-		
-		if (remainingCapacity(vehicle.get(t1), newList) < 0  
+
+		if (remainingCapacity(vehicle.get(t1), newList) < 0
 				&& !Constraints.testPickupBeforeDelivery(t1, this)
 				&& !Constraints.testPickupBeforeDelivery(t2, this)) {
 			time.put(t1, firstTaskInd);
@@ -125,8 +126,35 @@ public class Solution {
 			return false;
 
 		}
-		
+
 		return true;
+
+	}
+
+	public double cost() {
+
+		double cost = 0;
+		for (List<ActionWrapper> entry : solution.values()) {
+			if (!entry.isEmpty()) {
+
+				ActionWrapper firstTask = entry.get(0);
+				double costPerKm = vehicle.get(firstTask).costPerKm();
+				City current = vehicle.get(firstTask).getCurrentCity();
+				City next = firstTask.getCity();
+				double kms = current.distanceTo(next);
+
+				for (ActionWrapper actionWrapper : entry) {
+					current = next;
+					next = actionWrapper.getCity();
+					kms += current.distanceTo(next);
+				}
+				
+				cost+= kms*costPerKm;
+			}
+
+		}
+
+		return cost;
 
 	}
 }
