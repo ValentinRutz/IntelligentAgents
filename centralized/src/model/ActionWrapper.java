@@ -52,6 +52,8 @@ public abstract class ActionWrapper {
 	}
 	
 	public abstract void copy(List<ActionWrapper> l, Map<Integer, ActionWrapper> added);
+	
+	public abstract boolean checkTime(Solution s);
 
 	public int getWeight() {
 		return weight;

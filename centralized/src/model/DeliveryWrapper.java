@@ -28,4 +28,9 @@ public class DeliveryWrapper extends ActionWrapper {
 	public void copy(List<ActionWrapper> l, Map<Integer, ActionWrapper> added) {
 		l.add(added.get(this.getID()));
 	}
+
+	@Override
+	public boolean checkTime(Solution s) {
+		return s.getTime(this) > s.getTime(getCounterpart());
+	}
 }

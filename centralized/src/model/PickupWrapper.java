@@ -30,4 +30,9 @@ public class PickupWrapper extends ActionWrapper {
 		l.add(pw);
 		added.put(pw.getID(), pw.getCounterpart());
 	}
+
+	@Override
+	public boolean checkTime(Solution s) {
+		return s.getTime(this) < s.getTime(getCounterpart());
+	}
 }

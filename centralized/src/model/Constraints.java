@@ -24,9 +24,8 @@ public class Constraints {
 		}
 	}
 
-	public static boolean testPickupBeforeDelivery(ActionWrapper pw, Solution s) {
-		ActionWrapper dw = pw.getCounterpart();
-		return s.getTime(pw) < s.getTime(dw) && s.getVehicle(pw).id() == s.getVehicle(dw).id();
+	public static boolean testPickupBeforeDelivery(ActionWrapper aw, Solution s) {
+		return aw.checkTime(s) && s.getVehicle(aw).id() == s.getVehicle(aw.getCounterpart()).id();
 	}
 
 	public static boolean testFirstTaskHasTimeOneAndVehicleIsConsistent(int vehicleID, Solution s) {
