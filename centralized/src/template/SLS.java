@@ -34,9 +34,9 @@ public class SLS {
 			for (Task task : tasks) {
 				a = new PickupWrapper(task);
 				l = A.get(id);
-				if (Constraints.testCapacity(biggestCapacity, task, A)) {
+				if (Constraints.testCapacity(biggestCapacity, a, A)) {
 					l.add(a);
-					if (Constraints.testCapacity(biggestCapacity, task, A)) {
+					if (Constraints.testCapacity(biggestCapacity, a.getCounterpart(), A)) {
 						l.add(a.getCounterpart());
 					}
 				}
@@ -62,6 +62,22 @@ public class SLS {
 	private static List<Solution> chooseNeighbors(Solution sol) {
 		// TODO
 		return null;
+	}
+	
+	private static void swapTasks(int vehicleID, Solution sol, List<Solution> neighbors){
+		
+		Solution neighbor=null;
+		for (int i = 0; i < sol.get(vehicleID).size(); i++) {
+			for (int j=i+1; j < sol.get(vehicleID).size(); j++) {
+				neighbor = new Solution(sol);
+				if(neighbor.changeTasksOrder(vehicleID, i, j)){
+					neighbors.add(neighbor);
+				}			
+				
+			}
+		}
+		
+		
 	}
 
 	private static Solution localChoice(List<Solution> N) {
