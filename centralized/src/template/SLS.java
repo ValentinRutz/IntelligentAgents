@@ -1,9 +1,7 @@
 package template;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import logist.plan.Plan;
 import logist.simulation.Vehicle;
@@ -12,12 +10,13 @@ import logist.task.TaskSet;
 import model.ActionWrapper;
 import model.Constraints;
 import model.PickupWrapper;
+import model.Solution;
 
 public class SLS {
 
 	static List<Plan> sls(List<Vehicle> vehicles, TaskSet tasks) {
-		Map<Integer, List<ActionWrapper>> A = new HashMap<Integer, List<ActionWrapper>>();
-		Map<Integer, List<ActionWrapper>> Aold = new HashMap<Integer, List<ActionWrapper>>();
+		Solution A = new Solution();
+		Solution Aold = new Solution();
 		
 		Vehicle biggestCapacity = null;
 		for (Vehicle v : vehicles) {
@@ -39,21 +38,14 @@ public class SLS {
 				l.add(a.getCounterpart());
 			}
 			
-			List<Map<Integer, List<ActionWrapper>>> N;
+			List<Solution> N;
 
 			while (!Constraints.terminationCondition()) {
 				// Aold ← A
-				for (Map.Entry<Integer, List<ActionWrapper>> entry : A.entrySet()) {
-					List<ActionWrapper> tmpL = new LinkedList<ActionWrapper>();
-					Map<Integer, ActionWrapper> added = new HashMap<Integer, ActionWrapper>();
-					for (ActionWrapper aw : entry.getValue()) {
-						aw.copy(tmpL, added);
-					}
-					Aold.put(entry.getKey(), tmpL);
-				}
+				Aold = new Solution(A);
 				
 				// N ← ChooseNeighbours(Aold, X, D, C, f)
-				N = chooseNeighbors();
+				N = chooseNeighbors(Aold);
 				
 				// A ← LocalChoice(N, f)
 				A = localChoice(N);
@@ -63,17 +55,17 @@ public class SLS {
 		return solutionToPlans(A);
 	}
 
-	private static List<Map<Integer, List<ActionWrapper>>> chooseNeighbors() {
+	private static List<Solution> chooseNeighbors(Solution sol) {
     	// TODO
 		return null;
     }
 
-	private static Map<Integer, List<ActionWrapper>> localChoice(List<Map<Integer, List<ActionWrapper>>> N) {
+	private static Solution localChoice(List<Solution> N) {
     	// TODO
 		return null;
     }
 	
-	private static List<Plan> solutionToPlans(Map<Integer, List<ActionWrapper>> solution) {
+	private static List<Plan> solutionToPlans(Solution solution) {
     	// TODO
 		return null;
 	}
