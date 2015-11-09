@@ -10,6 +10,7 @@ public class DeliveryWrapper extends ActionWrapper {
 
 	public DeliveryWrapper(Task t, PickupWrapper pickupWrapper) {
 		super(t);
+		setWeight(-t.weight);
 		setCity(t.pickupCity);
 		setAction(new Delivery(t));
 		setCounterpart(pickupWrapper);
@@ -17,6 +18,7 @@ public class DeliveryWrapper extends ActionWrapper {
 
 	public DeliveryWrapper(ActionWrapper counterpart, PickupWrapper pickupWrapper) {
 		super(counterpart);
+		setWeight(counterpart.getWeight());
 		setCity(counterpart.getCity());
 		setAction(counterpart.getAction());
 		setCounterpart(pickupWrapper);

@@ -1,25 +1,37 @@
 package model;
 
+import java.util.Map;
+
 import logist.simulation.Vehicle;
 import logist.task.Task;
 import logist.task.TaskSet;
 
 public class Constraints {
 	
-	public static boolean testCapacitySolution(Vehicle biggestCapacity, TaskSet tasks) {
+	public static boolean testCapacitySolution(int biggestCapacity, TaskSet tasks) {
 		for (Task task : tasks) {
-			if(task.weight > biggestCapacity.capacity())
+			if(task.weight > biggestCapacity)
 				return false;
 		}
-		
 		return true;
 	}
 
-	public static boolean testCapacity(Vehicle v, Task t) {
-		return v.capacity() /* Some expression to get the sum of the weights of the current tasks */ - t.weight >= 0;
+	public static boolean testCapacity(Vehicle v, Task t, Solution s) {
+		try {
+			return v.capacity() - s.remainingCapacity(v) - t.weight >= 0;
+		} catch (NegativeCapacityException e) {
+			return false;
+		}
 	}
 	
-	public static boolean testInitialAction(Vehicle v, Task t) {
+	public static boolean testPickupBeforeDelivery(ActionWrapper pw, Solution s) {
+		ActionWrapper dw = pw.getCounterpart();
+		Map<ActionWrapper, Integer> time = s.getTime();
+		Map<ActionWrapper, Vehicle> vehicle = s.getVehicle();
+		return time.get(pw) < time.get(dw) && vehicle.get(pw).id() == vehicle.get(dw).id();
+	}
+	
+	public static boolean testFirstTaskHasTimeOne(Solution s) {
 		return false;
 	}
 

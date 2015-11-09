@@ -17,7 +17,7 @@ public class SLS {
 	static List<Plan> sls(List<Vehicle> vehicles, TaskSet tasks) {
 		Solution A = new Solution();
 		Solution Aold = new Solution();
-		
+
 		Vehicle biggestCapacity = null;
 		for (Vehicle v : vehicles) {
 			A.put(v.id(), new LinkedList<ActionWrapper>());
@@ -26,7 +26,7 @@ public class SLS {
 			}
 		}
 
-		if (Constraints.testCapacitySolution(biggestCapacity, tasks)) {
+		if (Constraints.testCapacitySolution(biggestCapacity.capacity(), tasks)) {
 			// Select initial solution
 			Integer id = new Integer(biggestCapacity.id());
 			ActionWrapper a = null;
@@ -34,19 +34,23 @@ public class SLS {
 			for (Task task : tasks) {
 				a = new PickupWrapper(task);
 				l = A.get(id);
-				l.add(a);
-				l.add(a.getCounterpart());
+				if (Constraints.testCapacity(biggestCapacity, task, A)) {
+					l.add(a);
+					if (Constraints.testCapacity(biggestCapacity, task, A)) {
+						l.add(a.getCounterpart());
+					}
+				}
 			}
-			
+
 			List<Solution> N;
 
 			while (!Constraints.terminationCondition()) {
 				// Aold ← A
 				Aold = new Solution(A);
-				
+
 				// N ← ChooseNeighbours(Aold, X, D, C, f)
 				N = chooseNeighbors(Aold);
-				
+
 				// A ← LocalChoice(N, f)
 				A = localChoice(N);
 			}
@@ -56,17 +60,17 @@ public class SLS {
 	}
 
 	private static List<Solution> chooseNeighbors(Solution sol) {
-    	// TODO
+		// TODO
 		return null;
-    }
+	}
 
 	private static Solution localChoice(List<Solution> N) {
-    	// TODO
+		// TODO
 		return null;
-    }
-	
+	}
+
 	private static List<Plan> solutionToPlans(Solution solution) {
-    	// TODO
+		// TODO
 		return null;
 	}
 }

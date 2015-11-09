@@ -1,4 +1,4 @@
-package model;
+	package model;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -6,11 +6,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import logist.simulation.Vehicle;
+
 public class Solution {
 	private Map<Integer, List<ActionWrapper>> solution;
+	private Map<ActionWrapper, Integer> time;
+	private Map<ActionWrapper, Vehicle> vehicle;
 	
 	public Solution() {
 		setSolution(new HashMap<Integer, List<ActionWrapper>>());
+		setTime(new HashMap<ActionWrapper, Integer>());
+		setVehicle(new HashMap<ActionWrapper, Vehicle>());
 	}
 	
 	public Solution(Solution otherSolution) {
@@ -42,5 +48,33 @@ public class Solution {
 
 	public List<ActionWrapper> get(Integer id) {
 		return solution.get(id);
+	}
+
+	public int remainingCapacity(Vehicle v) throws NegativeCapacityException {
+		int remainingCapacity = v.capacity();
+		List<ActionWrapper> tasks = get(v.id());
+		for (ActionWrapper aw : tasks) {
+			remainingCapacity -= aw.getWeight();
+			if (remainingCapacity < 0) {
+				throw new NegativeCapacityException();
+			}
+		}
+		return remainingCapacity;
+	}
+
+	public Map<ActionWrapper, Integer> getTime() {
+		return time;
+	}
+
+	public void setTime(Map<ActionWrapper, Integer> time) {
+		this.time = time;
+	}
+
+	public Map<ActionWrapper, Vehicle> getVehicle() {
+		return vehicle;
+	}
+
+	public void setVehicle(Map<ActionWrapper, Vehicle> vehicle) {
+		this.vehicle = vehicle;
 	}
 }
