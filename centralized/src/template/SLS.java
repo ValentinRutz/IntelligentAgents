@@ -1,7 +1,6 @@
 package template;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import logist.task.Task;
 import logist.task.TaskSet;
 import model.ActionWrapper;
 import model.Constraints;
-import model.DeliveryWrapper;
 import model.PickupWrapper;
 
 public class SLS {
