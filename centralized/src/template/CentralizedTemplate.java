@@ -35,8 +35,6 @@ public class CentralizedTemplate implements CentralizedBehavior {
     private long timeout_setup;
     private long timeout_plan;
     
-    static Map<Integer, ActionWrapper> firstActions;
-    
     @Override
     public void setup(Topology topology, TaskDistribution distribution,
             Agent agent) {
@@ -58,11 +56,6 @@ public class CentralizedTemplate implements CentralizedBehavior {
         this.topology = topology;
         this.distribution = distribution;
         this.agent = agent;
-        
-        firstActions = new HashMap<Integer, ActionWrapper>();  
-        for (Vehicle v : agent.vehicles()) {
-			firstActions.put(new Integer(v.id()), null);
-		}
     }
 
     @Override

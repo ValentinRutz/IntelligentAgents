@@ -1,5 +1,8 @@
 package model;
 
+import java.util.List;
+import java.util.Map;
+
 import logist.plan.Action;
 import logist.task.Task;
 import logist.topology.Topology.City;
@@ -11,12 +14,15 @@ public abstract class ActionWrapper {
 	private Action action;
 	
 	private ActionWrapper counterpart;
-	private ActionWrapper nextAction;
 	
 	public ActionWrapper(Task t) {
 		ID = t.id;
 		weight = t.weight;
-		
+	}
+	
+	public ActionWrapper(ActionWrapper aw) {
+		ID = aw.getID();
+		weight = aw.getWeight();
 	}
 	
 	public int getWeight() {
@@ -50,12 +56,6 @@ public abstract class ActionWrapper {
 	public void setCounterpart(ActionWrapper counterpart) {
 		this.counterpart = counterpart;
 	}
-
-	public ActionWrapper getNextAction() {
-		return nextAction;
-	}
-
-	public void setNextAction(ActionWrapper nextAction) {
-		this.nextAction = nextAction;
-	}
+	
+	public abstract void copy(List<ActionWrapper> l, Map<Integer, ActionWrapper> added);
 }
