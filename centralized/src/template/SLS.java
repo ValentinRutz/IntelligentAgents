@@ -161,8 +161,21 @@ public class SLS {
 				bestSolution = solution;
 			}
 		}
+		
+		List<Solution> bestSolutions = new ArrayList<Solution>();
+		
+		for (Solution solution : N) {
+			if ((solution.cost() - bestCost) < bestCost/1) {
+				bestSolutions.add(solution);
+			}
+		}
 
-		Random r = new Random();
+		Random r = new Random(System.currentTimeMillis());
+		if(!bestSolutions.isEmpty()) {
+			Collections.shuffle(bestSolutions, r);
+			bestSolution = bestSolutions.get(0);
+		}
+		
 		double p = r.nextDouble();
 
 		if (p < 0.3 && bestSolution != null)
