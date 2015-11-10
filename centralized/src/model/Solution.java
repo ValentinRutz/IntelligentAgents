@@ -135,8 +135,10 @@ public class Solution {
 		time.put(t2, firstTaskInd + 1);
 		solution.put(vehicleID, newList);
 
-		if (remainingCapacity(vehicle.get(t1), newList) < 0 || !Constraints.testPickupBeforeDelivery(t1, this)
+		if (remainingCapacity(vehicle.get(t1), newList) < 0
+				|| !Constraints.testPickupBeforeDelivery(t1, this)
 				|| !Constraints.testPickupBeforeDelivery(t2, this)) {
+			// Necessary to revert changes??
 			time.put(t1, firstTaskInd + 1);
 			time.put(t2, secondTaskInd + 1);
 			solution.put(vehicleID, oldList);
@@ -153,10 +155,6 @@ public class Solution {
 			return false;
 		}
 		ActionWrapper pw = vehicle0Solution.remove(0);
-		if (pw instanceof DeliveryWrapper) {
-			System.out.println("Problem for vehicle " + vehicle0);
-			return false;
-		}
 		ActionWrapper dw = pw.getCounterpart();
 		if (!vehicle0Solution.remove(dw)) {
 			return false;
@@ -168,11 +166,11 @@ public class Solution {
 
 		List<ActionWrapper> vehicle1Solution = solution.get(vehicleID1);
 
-		if (!Constraints.testCapacity(vehicle1, pw, this) && !vehicle1Solution.add(pw)) {
+		if (!Constraints.testCapacity(vehicle1, pw, this) || !vehicle1Solution.add(pw)) {
 			return false;
 		}
 
-		if (!Constraints.testCapacity(vehicle1, dw, this) && !vehicle1Solution.add(dw)) {
+		if (!Constraints.testCapacity(vehicle1, dw, this) || !vehicle1Solution.add(dw)) {
 			return false;
 		}
 
