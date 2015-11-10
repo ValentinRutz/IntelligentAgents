@@ -87,11 +87,11 @@ public class SLS {
 	private static void exchangeTask(List<Vehicle> vehicles, Solution sol, List<Solution> neighbors) {
 		Solution neighbor = null;
 		int size = vehicles.size();
-		if(size >= 2) {
+		if (size >= 2) {
 			for (int i = 0; i < size; i++) {
 				for (int j = i + 1; j < size; j++) {
 					neighbor = new Solution(sol);
-					if(neighbor.changeTaskVehicle(vehicles.get(i), vehicles.get(j))) {
+					if (neighbor.changeTaskVehicle(vehicles.get(i), vehicles.get(j))) {
 						neighbors.add(neighbor);
 					}
 				}
@@ -99,8 +99,7 @@ public class SLS {
 		}
 	}
 
-	private static void swapTasks(int vehicleID, Solution sol,
-			List<Solution> neighbors) {
+	private static void swapTasks(int vehicleID, Solution sol, List<Solution> neighbors) {
 
 		Solution neighbor = null;
 		int size = sol.get(vehicleID).size();
@@ -133,13 +132,12 @@ public class SLS {
 		Random r = new Random();
 		double p = r.nextDouble();
 
-		if (p < 0.5 && bestSolution!=null)
+		if (p < 0.5 && bestSolution != null)
 			return bestSolution;
 		else
 			return A;
 	}
 
-	
 	private static List<Plan> solutionToPlans(Solution solution) {
 		List<Plan> result = new ArrayList<Plan>();
 		for (List<ActionWrapper> entry : solution.getSolution().values()) {
@@ -149,29 +147,27 @@ public class SLS {
 				ActionWrapper firstTask = entry.get(0);
 				Vehicle v = solution.getVehicle(firstTask);
 				City current = v.getCurrentCity();
-				
+
 				List<Action> acts = new ArrayList<Action>();
-				
+
 				City next = null;
 
-								
 				for (ActionWrapper actionWrapper : entry) {
 					next = actionWrapper.getCity();
-					
+
 					for (City city : current.pathTo(next)) {
 						acts.add(new Move(city));
 					}
-					acts.add(actionWrapper.getAction());		
-					current = next;			
+					acts.add(actionWrapper.getAction());
+					current = next;
 				}
-				
-				
-				p = new Plan(v.getCurrentCity(),acts);
-				
-			}else {
+
+				p = new Plan(v.getCurrentCity(), acts);
+
+			} else {
 				p = Plan.EMPTY;
 			}
-			
+
 			result.add(p);
 
 		}

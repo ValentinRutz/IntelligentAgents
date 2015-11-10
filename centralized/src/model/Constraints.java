@@ -8,8 +8,7 @@ import logist.task.TaskSet;
 
 public class Constraints {
 
-	public static boolean testCapacitySolution(int biggestCapacity,
-			TaskSet tasks) {
+	public static boolean testCapacitySolution(int biggestCapacity, TaskSet tasks) {
 		for (Task task : tasks) {
 			if (task.weight > biggestCapacity)
 				return false;
@@ -32,14 +31,13 @@ public class Constraints {
 	}
 
 	public static boolean testFirstTaskHasTimeOneAndVehicleIsConsistent(int vehicleID, Solution s) {
-		if(s.get(vehicleID).size() < 1)
+		if (s.get(vehicleID).size() < 1)
 			return true;
 		ActionWrapper a = s.get(vehicleID).get(0);
 		return s.getTime(a) == 1 && s.getVehicle(a).id() == vehicleID;
 	}
 
-	public static boolean testNextActionHasConsitentTimeAndVehicle(
-			ActionWrapper aw, Solution s) {
+	public static boolean testNextActionHasConsitentTimeAndVehicle(ActionWrapper aw, Solution s) {
 		int vID = s.getVehicle(aw).id();
 		List<ActionWrapper> l = s.get(vID);
 		int idx = l.indexOf(aw);

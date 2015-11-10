@@ -64,7 +64,7 @@ public class Solution {
 
 	public int remainingCapacity(Vehicle v, List<ActionWrapper> tasks) {
 		int remainingCapacity = v.capacity();
-		
+
 		for (ActionWrapper aw : tasks) {
 			remainingCapacity -= aw.getWeight();
 			if (remainingCapacity < 0) {
@@ -73,7 +73,7 @@ public class Solution {
 				return -1;
 			}
 		}
-		
+
 		return remainingCapacity;
 	}
 
@@ -135,8 +135,7 @@ public class Solution {
 		time.put(t2, firstTaskInd + 1);
 		solution.put(vehicleID, newList);
 
-		if (remainingCapacity(vehicle.get(t1), newList) < 0
-				|| !Constraints.testPickupBeforeDelivery(t1, this)
+		if (remainingCapacity(vehicle.get(t1), newList) < 0 || !Constraints.testPickupBeforeDelivery(t1, this)
 				|| !Constraints.testPickupBeforeDelivery(t2, this)) {
 			time.put(t1, firstTaskInd + 1);
 			time.put(t2, secondTaskInd + 1);
@@ -146,7 +145,7 @@ public class Solution {
 
 		return true;
 	}
-	
+
 	public boolean changeTaskVehicle(Vehicle vehicle0, Vehicle vehicle1) {
 		int vehicleID0 = vehicle0.id(), vehicleID1 = vehicle1.id();
 		List<ActionWrapper> vehicle0Solution = solution.get(vehicleID0);
@@ -155,40 +154,39 @@ public class Solution {
 		}
 		ActionWrapper pw = vehicle0Solution.remove(0);
 		if (pw instanceof DeliveryWrapper) {
-			System.out.println("Problem for vehicle "+ vehicle0);
+			System.out.println("Problem for vehicle " + vehicle0);
 			return false;
 		}
 		ActionWrapper dw = pw.getCounterpart();
-		if(!vehicle0Solution.remove(dw)) {
+		if (!vehicle0Solution.remove(dw)) {
 			return false;
 		}
 		// Update time in vehicle0Solution
 		for (ActionWrapper aw : vehicle0Solution) {
 			time.put(aw, time.get(aw) - 1);
 		}
-		
+
 		List<ActionWrapper> vehicle1Solution = solution.get(vehicleID1);
-		
-		if(!Constraints.testCapacity(vehicle1, pw, this) && 
-				!vehicle1Solution.add(pw)) {
+
+		if (!Constraints.testCapacity(vehicle1, pw, this) && !vehicle1Solution.add(pw)) {
 			return false;
 		}
-		
-		if(!Constraints.testCapacity(vehicle1, dw, this) && !vehicle1Solution.add(dw)) {
+
+		if (!Constraints.testCapacity(vehicle1, dw, this) && !vehicle1Solution.add(dw)) {
 			return false;
 		}
-		
+
 		time.put(pw, vehicle1Solution.size() - 2);
 		time.put(dw, vehicle1Solution.size() - 1);
 		vehicle.put(pw, vehicle1);
 		vehicle.put(dw, vehicle1);
-		
-		if(!(Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID1, this) &&
-				Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID0, this) &&
-				Constraints.testPickupBeforeDelivery(pw, this))) {
+
+		if (!(Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID1, this)
+				&& Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID0, this)
+				&& Constraints.testPickupBeforeDelivery(pw, this))) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
