@@ -1,15 +1,14 @@
 package template;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import logist.plan.Action;
 import logist.plan.Action.Move;
 import logist.plan.Plan;
-import logist.plan.Action;
 import logist.simulation.Vehicle;
 import logist.task.Task;
 import logist.task.TaskSet;
@@ -41,14 +40,18 @@ public class SLS {
 			Integer id = new Integer(biggestCapacity.id());
 			ActionWrapper a = null;
 			List<ActionWrapper> l;
+			int time = 1;
 			for (Task task : tasks) {
 				a = new PickupWrapper(task);
 				l = A.get(id);
 				if (Constraints.testCapacity(biggestCapacity, a, A)) {
 					l.add(a);
-					if (Constraints.testCapacity(biggestCapacity,
-							a.getCounterpart(), A)) {
+					A.putVehicle(a, biggestCapacity);
+					A.putTime(a, time++);
+					if (Constraints.testCapacity(biggestCapacity, a.getCounterpart(), A)) {
 						l.add(a.getCounterpart());
+						A.putVehicle(a.getCounterpart(), biggestCapacity);
+						A.putTime(a.getCounterpart(), time++);
 					}
 				}
 			}

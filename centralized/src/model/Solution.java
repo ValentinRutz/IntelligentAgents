@@ -22,15 +22,27 @@ public class Solution {
 	}
 
 	public Solution(Solution otherSolution) {
-		for (Map.Entry<Integer, List<ActionWrapper>> entry : otherSolution
-				.entrySet()) {
+		setSolution(new HashMap<Integer, List<ActionWrapper>>());
+		for (Map.Entry<Integer, List<ActionWrapper>> entry : otherSolution.entrySet()) {
 			List<ActionWrapper> tmpL = new LinkedList<ActionWrapper>();
 			Map<Integer, ActionWrapper> added = new HashMap<Integer, ActionWrapper>();
+
+			System.out.println(entry);
+			System.out.println(entry.getValue());
 			for (ActionWrapper aw : entry.getValue()) {
+				System.out.println(aw);
 				aw.copy(tmpL, added);
 			}
 			solution.put(entry.getKey(), tmpL);
 		}
+		
+		setTime(new HashMap<ActionWrapper, Integer>());
+		for (Map.Entry<ActionWrapper, Integer> entry: otherSolution.time.entrySet()) {
+			time.put(entry.getKey(), entry.getValue().intValue());
+		}
+		
+		setVehicle(new HashMap<ActionWrapper, Vehicle>());
+		vehicle.putAll(otherSolution.vehicle);
 	}
 
 	public Map<Integer, List<ActionWrapper>> getSolution() {
@@ -68,6 +80,10 @@ public class Solution {
 	public int getTime(ActionWrapper aw) {
 		return time.get(aw).intValue();
 	}
+	
+	public void putTime(ActionWrapper aw, int newTime) {
+		time.put(aw, newTime);
+	}
 
 	public Map<ActionWrapper, Integer> getTime() {
 		return time;
@@ -79,6 +95,10 @@ public class Solution {
 
 	public Vehicle getVehicle(ActionWrapper aw) {
 		return vehicle.get(aw);
+	}
+	
+	public void putVehicle(ActionWrapper aw, Vehicle v) {
+		vehicle.put(aw, v);
 	}
 
 	public Map<ActionWrapper, Vehicle> getVehicle() {
@@ -97,7 +117,7 @@ public class Solution {
 
 		ActionWrapper t1 = oldList.get(firstTaskInd);
 		ActionWrapper t2 = oldList.get(secondTaskInd);
-
+		
 		int i = 0;
 		for (Iterator<ActionWrapper> iterator = oldList.iterator(); iterator
 				.hasNext();) {
@@ -120,15 +140,13 @@ public class Solution {
 		if (remainingCapacity(vehicle.get(t1), newList) < 0
 				&& !Constraints.testPickupBeforeDelivery(t1, this)
 				&& !Constraints.testPickupBeforeDelivery(t2, this)) {
-			time.put(t1, firstTaskInd);
-			time.put(t2, secondTaskInd);
+			time.put(t1, firstTaskInd + 1);
+			time.put(t2, secondTaskInd + 1);
 			solution.put(vehicleID, oldList);
 			return false;
-
 		}
 
 		return true;
-
 	}
 
 	public double cost() {
