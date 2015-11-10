@@ -204,13 +204,13 @@ public class Solution {
 				ActionWrapper firstTask = entry.get(0);
 				double costPerKm = vehicle.get(firstTask).costPerKm();
 				City current = vehicle.get(firstTask).getCurrentCity();
-				City next = firstTask.getCity();
-				double kms = current.distanceTo(next);
-
+				City next = null;
+				double kms = 0;
 				for (ActionWrapper actionWrapper : entry) {
-					current = next;
 					next = actionWrapper.getCity();
 					kms += current.distanceTo(next);
+					current = next;
+
 				}
 
 				cost += kms * costPerKm;
