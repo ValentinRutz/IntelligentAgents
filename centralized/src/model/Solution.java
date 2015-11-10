@@ -152,7 +152,7 @@ public class Solution {
 		int vehicleID0 = vehicle0.id(), vehicleID1 = vehicle1.id();
 		List<ActionWrapper> vehicle0Solution = solution.get(vehicleID0);
 		if (vehicle0Solution.size() < 2) {
-			System.out.println("Not enough tasks to transfer");
+//			System.out.println("Not enough tasks to transfer");
 			return false;
 		}
 		ActionWrapper pw = vehicle0Solution.remove(0);
@@ -169,12 +169,12 @@ public class Solution {
 		List<ActionWrapper> vehicle1Solution = solution.get(vehicleID1);
 
 		if (!Constraints.testCapacity(vehicle1, pw, this) || !vehicle1Solution.add(pw)) {
-			System.out.println("vehicle "+ vehicleID1 +" cannot add pickup");
+//			System.out.println("vehicle "+ vehicleID1 +" cannot add pickup");
 			return false;
 		}
 
 		if (!Constraints.testCapacity(vehicle1, dw, this) || !vehicle1Solution.add(dw)) {
-			System.out.println("vehicle "+ vehicleID1 +" cannot add delivery");
+//			System.out.println("vehicle "+ vehicleID1 +" cannot add delivery");
 			return false;
 		}
 
@@ -186,10 +186,10 @@ public class Solution {
 		if (!(Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID1, this)
 				&& Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID0, this)
 				&& Constraints.testPickupBeforeDelivery(pw, this))) {
-			System.out.println("Pickup before delivery or time not correctly updated");
-			for (ActionWrapper aw : vehicle1Solution) {
-				System.out.println("Time is " + time.get(aw));
-			}
+//			System.out.println("Pickup before delivery or time not correctly updated");
+//			for (ActionWrapper aw : vehicle1Solution) {
+//				System.out.println("Time is " + time.get(aw));
+//			}
 			return false;
 		}
 

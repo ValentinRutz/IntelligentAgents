@@ -68,14 +68,14 @@ public class CentralizedTemplate implements CentralizedBehavior {
         long time_end = System.currentTimeMillis();
         long duration = time_end - time_start;
         System.out.println("The plan was generated in "+duration+" milliseconds.");
-        Iterator<Vehicle> vehicleIter = vehicles.iterator();
-        for (Iterator<Plan> planIter = plans.iterator();
-        		planIter.hasNext() && vehicleIter.hasNext();) {
-			Plan plan = planIter.next();
-			Vehicle vehicle = vehicleIter.next();
-			System.out.println("For vehicle "+ vehicle.name() + ", plan is: "+ plan);
-			
-		}
+//        Iterator<Vehicle> vehicleIter = vehicles.iterator();
+//        for (Iterator<Plan> planIter = plans.iterator();
+//        		planIter.hasNext() && vehicleIter.hasNext();) {
+//			Plan plan = planIter.next();
+//			Vehicle vehicle = vehicleIter.next();
+//			System.out.println("For vehicle "+ vehicle.name() + ", plan is: "+ plan);
+//			
+//		}
         return plans;
     }
 

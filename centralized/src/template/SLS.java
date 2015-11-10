@@ -79,7 +79,6 @@ public class SLS {
 
 		List<Solution> neighbors = new ArrayList<Solution>();
 		exchangeTask(vehicles, sol, neighbors);
-		System.out.println(neighbors);
 		swapTasks(vehicleID, sol, neighbors);
 
 		return neighbors;
