@@ -27,20 +27,17 @@ public class Solution {
 			List<ActionWrapper> tmpL = new LinkedList<ActionWrapper>();
 			Map<Integer, ActionWrapper> added = new HashMap<Integer, ActionWrapper>();
 
-			System.out.println(entry);
-			System.out.println(entry.getValue());
 			for (ActionWrapper aw : entry.getValue()) {
-				System.out.println(aw);
 				aw.copy(tmpL, added);
 			}
 			solution.put(entry.getKey(), tmpL);
 		}
-		
+
 		setTime(new HashMap<ActionWrapper, Integer>());
-		for (Map.Entry<ActionWrapper, Integer> entry: otherSolution.time.entrySet()) {
+		for (Map.Entry<ActionWrapper, Integer> entry : otherSolution.time.entrySet()) {
 			time.put(entry.getKey(), entry.getValue().intValue());
 		}
-		
+
 		setVehicle(new HashMap<ActionWrapper, Vehicle>());
 		vehicle.putAll(otherSolution.vehicle);
 	}
@@ -72,6 +69,8 @@ public class Solution {
 			remainingCapacity -= aw.getWeight();
 			if (remainingCapacity < 0) {
 				break;
+			} else if (remainingCapacity > v.capacity()) {
+				return -1;
 			}
 		}
 		return remainingCapacity;
@@ -80,7 +79,7 @@ public class Solution {
 	public int getTime(ActionWrapper aw) {
 		return time.get(aw).intValue();
 	}
-	
+
 	public void putTime(ActionWrapper aw, int newTime) {
 		time.put(aw, newTime);
 	}
@@ -96,7 +95,7 @@ public class Solution {
 	public Vehicle getVehicle(ActionWrapper aw) {
 		return vehicle.get(aw);
 	}
-	
+
 	public void putVehicle(ActionWrapper aw, Vehicle v) {
 		vehicle.put(aw, v);
 	}
@@ -109,26 +108,24 @@ public class Solution {
 		this.vehicle = vehicle;
 	}
 
-	public boolean changeTasksOrder(int vehicleID, int firstTaskInd,
-			int secondTaskInd) {
+	public boolean changeTasksOrder(int vehicleID, int firstTaskInd, int secondTaskInd) {
 		List<ActionWrapper> oldList = solution.get(vehicleID);
 
 		List<ActionWrapper> newList = new LinkedList<ActionWrapper>();
 
 		ActionWrapper t1 = oldList.get(firstTaskInd);
 		ActionWrapper t2 = oldList.get(secondTaskInd);
-		
+
 		int i = 0;
-		for (Iterator<ActionWrapper> iterator = oldList.iterator(); iterator
-				.hasNext();) {
+		for (Iterator<ActionWrapper> iterator = oldList.iterator(); iterator.hasNext();) {
 			ActionWrapper actionWrapper = (ActionWrapper) iterator.next();
 			if (i == firstTaskInd) {
 				newList.add(t2);
-
 			} else if (i == secondTaskInd) {
 				newList.add(t1);
-			} else
+			} else {
 				newList.add(actionWrapper);
+			}
 
 			i++;
 		}
@@ -138,8 +135,8 @@ public class Solution {
 		solution.put(vehicleID, newList);
 
 		if (remainingCapacity(vehicle.get(t1), newList) < 0
-				&& !Constraints.testPickupBeforeDelivery(t1, this)
-				&& !Constraints.testPickupBeforeDelivery(t2, this)) {
+				|| !Constraints.testPickupBeforeDelivery(t1, this)
+				|| !Constraints.testPickupBeforeDelivery(t2, this)) {
 			time.put(t1, firstTaskInd + 1);
 			time.put(t2, secondTaskInd + 1);
 			solution.put(vehicleID, oldList);
@@ -154,7 +151,6 @@ public class Solution {
 		double cost = 0;
 		for (List<ActionWrapper> entry : solution.values()) {
 			if (!entry.isEmpty()) {
-
 				ActionWrapper firstTask = entry.get(0);
 				double costPerKm = vehicle.get(firstTask).costPerKm();
 				City current = vehicle.get(firstTask).getCurrentCity();
@@ -166,13 +162,11 @@ public class Solution {
 					next = actionWrapper.getCity();
 					kms += current.distanceTo(next);
 				}
-				
-				cost+= kms*costPerKm;
-			}
 
+				cost += kms * costPerKm;
+			}
 		}
 
 		return cost;
-
 	}
 }

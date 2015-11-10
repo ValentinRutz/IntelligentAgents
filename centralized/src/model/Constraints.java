@@ -28,13 +28,10 @@ public class Constraints {
 	}
 
 	public static boolean testPickupBeforeDelivery(ActionWrapper aw, Solution s) {
-		return aw.checkTime(s)
-				&& s.getVehicle(aw).id() == s.getVehicle(aw.getCounterpart())
-						.id();
+		return aw.checkTime(s) && s.getVehicle(aw).id() == s.getVehicle(aw.getCounterpart()).id();
 	}
 
-	public static boolean testFirstTaskHasTimeOneAndVehicleIsConsistent(
-			int vehicleID, Solution s) {
+	public static boolean testFirstTaskHasTimeOneAndVehicleIsConsistent(int vehicleID, Solution s) {
 		ActionWrapper a = s.get(vehicleID).get(0);
 		return s.getTime(a) == 1 && s.getVehicle(a).id() == vehicleID;
 	}
@@ -52,7 +49,7 @@ public class Constraints {
 		return false;
 	}
 
-	public static boolean terminationCondition() {
-		return false;
+	public static boolean terminationCondition(int i) {
+		return i >= 10000;
 	}
 }

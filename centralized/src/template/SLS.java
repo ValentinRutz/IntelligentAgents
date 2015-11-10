@@ -28,8 +28,7 @@ public class SLS {
 		Vehicle biggestCapacity = null;
 		for (Vehicle v : vehicles) {
 			A.put(v.id(), new LinkedList<ActionWrapper>());
-			if (biggestCapacity == null
-					|| biggestCapacity.capacity() < v.capacity()) {
+			if (biggestCapacity == null || biggestCapacity.capacity() < v.capacity()) {
 				biggestCapacity = v;
 			}
 			ids.add(v.id());
@@ -57,8 +56,7 @@ public class SLS {
 			}
 
 			List<Solution> N;
-
-			while (!Constraints.terminationCondition()) {
+			for (int i = 0; !Constraints.terminationCondition(i); ++i) {
 				// Aold ← A
 				Aold = new Solution(A);
 
@@ -66,15 +64,14 @@ public class SLS {
 				N = chooseNeighbors(Aold, ids);
 
 				// A ← LocalChoice(N, f)
-				A = localChoice(N, A);
+				A = localChoice(N, Aold);
 			}
 		}
 
 		return solutionToPlans(A);
 	}
 
-	private static List<Solution> chooseNeighbors(Solution sol,
-			List<Integer> ids) {
+	private static List<Solution> chooseNeighbors(Solution sol, List<Integer> ids) {
 		Collections.shuffle(ids);
 		int vehicleID = ids.get(0);
 
@@ -94,16 +91,15 @@ public class SLS {
 			List<Solution> neighbors) {
 
 		Solution neighbor = null;
-		for (int i = 0; i < sol.get(vehicleID).size(); i++) {
-			for (int j = i + 1; j < sol.get(vehicleID).size(); j++) {
+		int size = sol.get(vehicleID).size();
+		for (int i = 0; i < size; i++) {
+			for (int j = i + 1; j < size; j++) {
 				neighbor = new Solution(sol);
 				if (neighbor.changeTasksOrder(vehicleID, i, j)) {
 					neighbors.add(neighbor);
 				}
-
 			}
 		}
-
 	}
 
 	private static Solution localChoice(List<Solution> N, Solution A) {
@@ -120,13 +116,12 @@ public class SLS {
 				bestCost = solution.cost();
 				bestSolution = solution;
 			}
-
 		}
 
 		Random r = new Random();
 		double p = r.nextDouble();
 
-		if (p < 0.3 && bestSolution!=null)
+		if (p < 0.5 && bestSolution!=null)
 			return bestSolution;
 		else
 			return A;
@@ -145,22 +140,17 @@ public class SLS {
 				
 				List<Action> acts = new ArrayList<Action>();
 				
-				City next = firstTask.getCity();
+				City next = null;
 
-				for (City city : current.pathTo(next)) {
-					acts.add(new Move(city));
-				}
-				
-				acts.add(firstTask.getAction());
-				
+								
 				for (ActionWrapper actionWrapper : entry) {
-					current = next;
 					next = actionWrapper.getCity();
 					
 					for (City city : current.pathTo(next)) {
 						acts.add(new Move(city));
 					}
-					acts.add(actionWrapper.getAction());					
+					acts.add(actionWrapper.getAction());		
+					current = next;			
 				}
 				
 				
