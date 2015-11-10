@@ -154,27 +154,40 @@ public class Solution {
 			return false;
 		}
 		ActionWrapper pw = vehicle0Solution.remove(0);
+		if (pw instanceof DeliveryWrapper) {
+			System.out.println("Problem for vehicle "+ vehicle0);
+			return false;
+		}
 		ActionWrapper dw = pw.getCounterpart();
 		if(!vehicle0Solution.remove(dw)) {
 			return false;
 		}
-		
 		// Update time in vehicle0Solution
 		for (ActionWrapper aw : vehicle0Solution) {
 			time.put(aw, time.get(aw) - 1);
 		}
 		
 		List<ActionWrapper> vehicle1Solution = solution.get(vehicleID1);
-		if(!vehicle1Solution.add(pw)) {
+		
+		if(!Constraints.testCapacity(vehicle1, pw, this) && 
+				!vehicle1Solution.add(pw)) {
 			return false;
 		}
-		if(!vehicle1Solution.add(dw)) {
+		
+		if(!Constraints.testCapacity(vehicle1, dw, this) && !vehicle1Solution.add(dw)) {
 			return false;
 		}
+		
 		time.put(pw, vehicle1Solution.size() - 2);
 		time.put(dw, vehicle1Solution.size() - 1);
 		vehicle.put(pw, vehicle1);
 		vehicle.put(dw, vehicle1);
+		
+		if(!(Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID1, this) &&
+				Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID0, this) &&
+				Constraints.testPickupBeforeDelivery(pw, this))) {
+			return false;
+		}
 		
 		return true;
 	}

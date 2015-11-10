@@ -32,6 +32,8 @@ public class Constraints {
 	}
 
 	public static boolean testFirstTaskHasTimeOneAndVehicleIsConsistent(int vehicleID, Solution s) {
+		if(s.get(vehicleID).size() < 1)
+			return true;
 		ActionWrapper a = s.get(vehicleID).get(0);
 		return s.getTime(a) == 1 && s.getVehicle(a).id() == vehicleID;
 	}
