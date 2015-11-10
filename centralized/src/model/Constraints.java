@@ -50,6 +50,6 @@ public class Constraints {
 	}
 
 	public static boolean terminationCondition(int i) {
-		return i >= 10000;
+		return i >= 300;
 	}
 }

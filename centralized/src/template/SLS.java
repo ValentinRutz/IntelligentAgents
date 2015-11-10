@@ -2,8 +2,10 @@ package template;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import logist.plan.Action;
@@ -28,7 +30,8 @@ public class SLS {
 		Vehicle biggestCapacity = null;
 		for (Vehicle v : vehicles) {
 			A.put(v.id(), new LinkedList<ActionWrapper>());
-			if (biggestCapacity == null || biggestCapacity.capacity() < v.capacity()) {
+			if (biggestCapacity == null
+					|| biggestCapacity.capacity() < v.capacity()) {
 				biggestCapacity = v;
 			}
 			ids.add(v.id());
@@ -36,22 +39,41 @@ public class SLS {
 
 		if (Constraints.testCapacitySolution(biggestCapacity.capacity(), tasks)) {
 			// Select initial solution
-			Integer id = new Integer(biggestCapacity.id());
 			ActionWrapper a = null;
 			List<ActionWrapper> l;
-			int time = 1;
-			for (Task task : tasks) {
-				a = new PickupWrapper(task);
-				l = A.get(id);
-				if (Constraints.testCapacity(biggestCapacity, a, A)) {
+			int size = vehicles.size(), tasksCounter = 0;
+			Random r = new Random(System.currentTimeMillis());
+
+			Iterator<Task> it = tasks.iterator();
+			Task t = it.next();
+			Vehicle v = null;
+			do {
+				v = vehicles.get(r.nextInt(size));
+				a = new PickupWrapper(t);
+				l = A.get(v.id());
+
+				if (Constraints.testCapacity(v, a, A)) {
 					l.add(a);
-					A.putVehicle(a, biggestCapacity);
-					A.putTime(a, time++);
-					if (Constraints.testCapacity(biggestCapacity, a.getCounterpart(), A)) {
+					A.putVehicle(a, v);
+//					A.putTime(a, time++);
+					if (Constraints.testCapacity(v, a.getCounterpart(), A)) {
 						l.add(a.getCounterpart());
-						A.putVehicle(a.getCounterpart(), biggestCapacity);
-						A.putTime(a.getCounterpart(), time++);
+						A.putVehicle(a.getCounterpart(), v);
+//						A.putTime(a.getCounterpart(), time++);t
+						tasksCounter++;
+
+						if (tasksCounter != tasks.size()) {
+							t = it.next();
+						}
 					}
+				}
+			} while (it.hasNext() || tasksCounter != tasks.size());
+			
+			int time = 0;
+			for (Map.Entry<Integer, List<ActionWrapper>> entry : A.getSolution().entrySet()) {
+				time = 0;
+				for (ActionWrapper aw : entry.getValue()) {
+					A.putTime(aw, ++time);
 				}
 			}
 
@@ -67,24 +89,34 @@ public class SLS {
 
 				// A ← LocalChoice(N, f)
 				A = localChoice(N, Aold);
+				System.out.println("Chosen " + A.cost());
 			}
 		}
 
 		return solutionToPlans(A);
 	}
 
-	private static List<Solution> chooseNeighbors(Solution sol, List<Vehicle> vehicles) {
+	private static List<Solution> chooseNeighbors(Solution sol,
+			List<Vehicle> vehicles) {
 		Collections.shuffle(vehicles);
 		int vehicleID = vehicles.get(0).id();
 
 		List<Solution> neighbors = new ArrayList<Solution>();
 		exchangeTask(vehicles, sol, neighbors);
+		// for (Solution solution : neighbors) {
+		// System.out.print(solution.cost() + " ");
+		// }
+		// System.out.println();
 		swapTasks(vehicleID, sol, neighbors);
-
+		// for (Solution solution : neighbors) {
+		// System.out.print(solution.cost() + " ");
+		// }
+		// System.out.println();
 		return neighbors;
 	}
 
-	private static void exchangeTask(List<Vehicle> vehicles, Solution sol, List<Solution> neighbors) {
+	private static void exchangeTask(List<Vehicle> vehicles, Solution sol,
+			List<Solution> neighbors) {
 		Vehicle chosen = vehicles.get(0);
 		Solution neighbor = null;
 		int size = vehicles.size();
@@ -100,7 +132,8 @@ public class SLS {
 		}
 	}
 
-	private static void swapTasks(int vehicleID, Solution sol, List<Solution> neighbors) {
+	private static void swapTasks(int vehicleID, Solution sol,
+			List<Solution> neighbors) {
 		Solution neighbor = null;
 		int size = sol.get(vehicleID).size();
 		for (int i = 0; i < size; i++) {
@@ -132,7 +165,7 @@ public class SLS {
 		Random r = new Random();
 		double p = r.nextDouble();
 
-		if (p < 0.4 && bestSolution != null)
+		if (p < 0.3 && bestSolution != null)
 			return bestSolution;
 		else
 			return A;
