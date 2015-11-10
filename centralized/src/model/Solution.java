@@ -14,6 +14,7 @@ public class Solution {
 	private Map<Integer, List<ActionWrapper>> solution;
 	private Map<ActionWrapper, Integer> time;
 	private Map<ActionWrapper, Vehicle> vehicle;
+	private double cost = -1;
 
 	public Solution() {
 		setSolution(new HashMap<Integer, List<ActionWrapper>>());
@@ -199,26 +200,28 @@ public class Solution {
 	}
 
 	public double cost() {
-
-		double cost = 0;
-		for (List<ActionWrapper> entry : solution.values()) {
-			if (!entry.isEmpty()) {
-				ActionWrapper firstTask = entry.get(0);
-				double costPerKm = vehicle.get(firstTask).costPerKm();
-				City current = vehicle.get(firstTask).getCurrentCity();
-				City next = null;
-				double kms = 0;
-				for (ActionWrapper actionWrapper : entry) {
-					next = actionWrapper.getCity();
-					kms += current.distanceTo(next);
-					current = next;
-
+		if (cost == -1) {
+			double cost = 0;
+			for (List<ActionWrapper> entry : solution.values()) {
+				if (!entry.isEmpty()) {
+					ActionWrapper firstTask = entry.get(0);
+					double costPerKm = vehicle.get(firstTask).costPerKm();
+					City current = vehicle.get(firstTask).getCurrentCity();
+					City next = null;
+					double kms = 0;
+					for (ActionWrapper actionWrapper : entry) {
+						next = actionWrapper.getCity();
+						kms += current.distanceTo(next);
+						current = next;
+	
+					}
+	
+					cost += kms * costPerKm;
 				}
-
-				cost += kms * costPerKm;
 			}
+			this.cost = cost;
 		}
 
-		return cost;
+		return this.cost;
 	}
 }
