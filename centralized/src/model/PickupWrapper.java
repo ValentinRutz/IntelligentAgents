@@ -35,4 +35,9 @@ public class PickupWrapper extends ActionWrapper {
 	public boolean checkTime(Solution s) {
 		return s.getTime(this) < s.getTime(getCounterpart());
 	}
+
+	@Override
+	public ActionWrapper getPickup() {
+		return this;
+	}
 }

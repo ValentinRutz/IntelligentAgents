@@ -148,18 +148,20 @@ public class Solution {
 		return true;
 	}
 
-	public boolean changeTaskVehicle(Vehicle vehicle0, Vehicle vehicle1) {
+	public boolean changeTaskVehicle(Vehicle vehicle0, Vehicle vehicle1, int taskInd) {
 		int vehicleID0 = vehicle0.id(), vehicleID1 = vehicle1.id();
 		List<ActionWrapper> vehicle0Solution = solution.get(vehicleID0);
 		if (vehicle0Solution.size() < 2) {
 //			System.out.println("Not enough tasks to transfer");
 			return false;
 		}
-		ActionWrapper pw = vehicle0Solution.remove(0);
+		
+		ActionWrapper pw = vehicle0Solution.remove(taskInd).getPickup();
 		ActionWrapper dw = pw.getCounterpart();
 		if (!vehicle0Solution.remove(dw)) {
 			return false;
 		}
+		
 		// Update time in vehicle0Solution
 		int i = 1;
 		for (ActionWrapper aw : vehicle0Solution) {

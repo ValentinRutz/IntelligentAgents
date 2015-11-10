@@ -22,14 +22,13 @@ public class SLS {
 
 	static List<Plan> sls(List<Vehicle> vehicles, TaskSet tasks) {
 		Solution A = new Solution();
-		Solution Aold = new Solution();
+		Solution Aold;
 		List<Integer> ids = new LinkedList<Integer>();
 
 		Vehicle biggestCapacity = null;
 		for (Vehicle v : vehicles) {
 			A.put(v.id(), new LinkedList<ActionWrapper>());
-			if (biggestCapacity == null
-					|| biggestCapacity.capacity() < v.capacity()) {
+			if (biggestCapacity == null || biggestCapacity.capacity() < v.capacity()) {
 				biggestCapacity = v;
 			}
 			ids.add(v.id());
@@ -48,8 +47,7 @@ public class SLS {
 					l.add(a);
 					A.putVehicle(a, biggestCapacity);
 					A.putTime(a, time++);
-					if (Constraints.testCapacity(biggestCapacity,
-							a.getCounterpart(), A)) {
+					if (Constraints.testCapacity(biggestCapacity, a.getCounterpart(), A)) {
 						l.add(a.getCounterpart());
 						A.putVehicle(a.getCounterpart(), biggestCapacity);
 						A.putTime(a.getCounterpart(), time++);
@@ -75,37 +73,34 @@ public class SLS {
 		return solutionToPlans(A);
 	}
 
-	private static List<Solution> chooseNeighbors(Solution sol,
-			List<Vehicle> vehicles) {
+	private static List<Solution> chooseNeighbors(Solution sol, List<Vehicle> vehicles) {
 		Collections.shuffle(vehicles);
 		int vehicleID = vehicles.get(0).id();
 
 		List<Solution> neighbors = new ArrayList<Solution>();
-		exchangeTask(vehicleID, vehicles, sol, neighbors);
+		exchangeTask(vehicles, sol, neighbors);
 		swapTasks(vehicleID, sol, neighbors);
 
 		return neighbors;
 	}
 
-	private static void exchangeTask(int vehicleIND, List<Vehicle> vehicles,
-			Solution sol, List<Solution> neighbors) {
+	private static void exchangeTask(List<Vehicle> vehicles, Solution sol, List<Solution> neighbors) {
 		Vehicle chosen = vehicles.get(0);
 		Solution neighbor = null;
 		int size = vehicles.size();
 		if (size >= 2) {
 			for (int i = 1; i < size; i++) {
-				neighbor = new Solution(sol);
-				if (neighbor.changeTaskVehicle(chosen, vehicles.get(i))) {
-					neighbors.add(neighbor);
+				for (int j = 0; j < sol.get(chosen.id()).size(); j++) {
+					neighbor = new Solution(sol);
+					if (neighbor.changeTaskVehicle(chosen, vehicles.get(i), j)) {
+						neighbors.add(neighbor);
+					}
 				}
-
 			}
 		}
 	}
 
-	private static void swapTasks(int vehicleID, Solution sol,
-			List<Solution> neighbors) {
-
+	private static void swapTasks(int vehicleID, Solution sol, List<Solution> neighbors) {
 		Solution neighbor = null;
 		int size = sol.get(vehicleID).size();
 		for (int i = 0; i < size; i++) {
@@ -137,7 +132,7 @@ public class SLS {
 		Random r = new Random();
 		double p = r.nextDouble();
 
-		if (p < 0.3 && bestSolution != null)
+		if (p < 0.4 && bestSolution != null)
 			return bestSolution;
 		else
 			return A;

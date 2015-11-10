@@ -63,6 +63,8 @@ public abstract class ActionWrapper {
 		this.weight = weight;
 	}
 	
+	public abstract ActionWrapper getPickup();
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
