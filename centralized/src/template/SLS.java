@@ -56,12 +56,14 @@ public class SLS {
 			}
 
 			List<Solution> N;
+			List<Vehicle> vehiclesCopy = new ArrayList<Vehicle>();
+			vehiclesCopy.addAll(vehicles);
 			for (int i = 0; !Constraints.terminationCondition(i); ++i) {
 				// Aold ← A
 				Aold = new Solution(A);
 
 				// N ← ChooseNeighbours(Aold, X, D, C, f)
-				N = chooseNeighbors(Aold, ids);
+				N = chooseNeighbors(Aold, vehiclesCopy);
 
 				// A ← LocalChoice(N, f)
 				A = localChoice(N, Aold);
@@ -71,20 +73,30 @@ public class SLS {
 		return solutionToPlans(A);
 	}
 
-	private static List<Solution> chooseNeighbors(Solution sol, List<Integer> ids) {
-		Collections.shuffle(ids);
-		int vehicleID = ids.get(0);
+	private static List<Solution> chooseNeighbors(Solution sol, List<Vehicle> vehicles) {
+		Collections.shuffle(vehicles);
+		int vehicleID = vehicles.get(0).id();
 
 		List<Solution> neighbors = new ArrayList<Solution>();
 		swapTasks(vehicleID, sol, neighbors);
-		exchangeTask(vehicleID, sol, neighbors);
+		exchangeTask(vehicles, sol, neighbors);
 
 		return neighbors;
 	}
 
-	private static void exchangeTask(int vehicleID, Solution sol,
-			List<Solution> neighbors) {
-		// TODO
+	private static void exchangeTask(List<Vehicle> vehicles, Solution sol, List<Solution> neighbors) {
+		Solution neighbor = null;
+		int size = vehicles.size();
+		if(size >= 2) {
+			for (int i = 0; i < size; i++) {
+				for (int j = i + 1; j < size; j++) {
+					neighbor = new Solution(sol);
+					if(neighbor.changeTaskVehicle(vehicles.get(i), vehicles.get(j))) {
+						neighbors.add(neighbor);
+					}
+				}
+			}
+		}
 	}
 
 	private static void swapTasks(int vehicleID, Solution sol,

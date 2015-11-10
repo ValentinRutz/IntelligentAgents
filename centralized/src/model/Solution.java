@@ -63,8 +63,8 @@ public class Solution {
 	}
 
 	public int remainingCapacity(Vehicle v, List<ActionWrapper> tasks) {
-
 		int remainingCapacity = v.capacity();
+		
 		for (ActionWrapper aw : tasks) {
 			remainingCapacity -= aw.getWeight();
 			if (remainingCapacity < 0) {
@@ -73,6 +73,7 @@ public class Solution {
 				return -1;
 			}
 		}
+		
 		return remainingCapacity;
 	}
 
@@ -143,6 +144,38 @@ public class Solution {
 			return false;
 		}
 
+		return true;
+	}
+	
+	public boolean changeTaskVehicle(Vehicle vehicle0, Vehicle vehicle1) {
+		int vehicleID0 = vehicle0.id(), vehicleID1 = vehicle1.id();
+		List<ActionWrapper> vehicle0Solution = solution.get(vehicleID0);
+		if (vehicle0Solution.size() < 2) {
+			return false;
+		}
+		ActionWrapper pw = vehicle0Solution.remove(0);
+		ActionWrapper dw = pw.getCounterpart();
+		if(!vehicle0Solution.remove(dw)) {
+			return false;
+		}
+		
+		// Update time in vehicle0Solution
+		for (ActionWrapper aw : vehicle0Solution) {
+			time.put(aw, time.get(aw) - 1);
+		}
+		
+		List<ActionWrapper> vehicle1Solution = solution.get(vehicleID1);
+		if(!vehicle1Solution.add(pw)) {
+			return false;
+		}
+		if(!vehicle1Solution.add(dw)) {
+			return false;
+		}
+		time.put(pw, vehicle1Solution.size() - 2);
+		time.put(dw, vehicle1Solution.size() - 1);
+		vehicle.put(pw, vehicle1);
+		vehicle.put(dw, vehicle1);
+		
 		return true;
 	}
 
