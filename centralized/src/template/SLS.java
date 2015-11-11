@@ -165,7 +165,7 @@ public class SLS {
 		List<Solution> bestSolutions = new ArrayList<Solution>();
 		
 		for (Solution solution : N) {
-			if ((solution.cost() - bestCost) < bestCost/1) {
+			if ((solution.cost() - bestCost) < 0.03*bestCost) {
 				bestSolutions.add(solution);
 			}
 		}
