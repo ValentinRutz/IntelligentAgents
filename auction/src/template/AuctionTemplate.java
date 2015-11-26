@@ -2,6 +2,7 @@ package template;
 
 //the list of imports
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -15,6 +16,7 @@ import logist.task.TaskDistribution;
 import logist.task.TaskSet;
 import logist.topology.Topology;
 import logist.topology.Topology.City;
+import template.SLS;
 
 /**
  * A very simple auction agent that assigns all tasks to its first vehicle and
@@ -30,6 +32,12 @@ public class AuctionTemplate implements AuctionBehavior {
 	private Random random;
 	private Vehicle vehicle;
 	private City currentCity;
+	private ArrayList<Task> wonSoFar;
+	private ArrayList<Task> universe;
+
+	private double currentCost;
+	private double tmpCost;
+	private boolean firstTime;
 
 	@Override
 	public void setup(Topology topology, TaskDistribution distribution,
@@ -43,68 +51,65 @@ public class AuctionTemplate implements AuctionBehavior {
 
 		long seed = -9019554669489983951L * currentCity.hashCode() * agent.id();
 		this.random = new Random(seed);
+
+		firstTime = true;
+		currentCost = 0;
+		wonSoFar = new ArrayList<>();
+		universe = new ArrayList<>();
 	}
 
 	@Override
 	public void auctionResult(Task previous, int winner, Long[] bids) {
 		if (winner == agent.id()) {
 			currentCity = previous.deliveryCity;
+			wonSoFar.add(previous);
+			
+			currentCost = tmpCost;
+
 		}
 	}
-	
+
 	@Override
 	public Long askPrice(Task task) {
 
 		if (vehicle.capacity() < task.weight)
 			return null;
 
-		long distanceTask = task.pickupCity.distanceUnitsTo(task.deliveryCity);
-		long distanceSum = distanceTask
-				+ currentCity.distanceUnitsTo(task.pickupCity);
-		double marginalCost = Measures.unitsToKM(distanceSum
-				* vehicle.costPerKm());
+		System.out.println(task.id);
 
-		double ratio = 1.0 + (random.nextDouble() * 0.05 * task.id);
-		double bid = ratio * marginalCost;
-
-		return (long) Math.round(bid);
+		universe.add(task);
+		Task [] arr = new Task[universe.size()];
+		universe.toArray(arr);
+		TaskSet tasks = TaskSet.create(arr);
+		TaskSet empty = TaskSet.noneOf(tasks);
+		
+		for (Task task2 : wonSoFar) {
+			
+			empty.add(arr[task2.id]);
+		}
+		
+		empty.add(task);
+			
+		tmpCost = SLS.sls(agent.vehicles(), empty, 0.5).cost();
+				
+	//	System.out.println("Tmpcost " + tmpCost);
+	//	System.out.println("Curr cost "+ currentCost);
+		System.out.println("Won so far " + wonSoFar.size());
+		
+		double marginalCost = tmpCost - currentCost;
+		return (long)Math.ceil(marginalCost)+1;
 	}
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
+
+		// System.out.println("Agent " + agent.id() + " has tasks " + tasks);
+
+		List<Plan> plans = SLS.solutionToPlans(SLS.sls(vehicles, tasks, 0.5));
+
 		
-//		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
-
-		Plan planVehicle1 = naivePlan(vehicle, tasks);
-
-		List<Plan> plans = new ArrayList<Plan>();
-		plans.add(planVehicle1);
-		while (plans.size() < vehicles.size())
-			plans.add(Plan.EMPTY);
-
 		return plans;
 	}
 
-	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
-		City current = vehicle.getCurrentCity();
-		Plan plan = new Plan(current);
-
-		for (Task task : tasks) {
-			// move: current city => pickup location
-			for (City city : current.pathTo(task.pickupCity))
-				plan.appendMove(city);
-
-			plan.appendPickup(task);
-
-			// move: pickup location => delivery location
-			for (City city : task.path())
-				plan.appendMove(city);
-
-			plan.appendDelivery(task);
-
-			// set current city
-			current = task.deliveryCity;
-		}
-		return plan;
-	}
+	
 }
