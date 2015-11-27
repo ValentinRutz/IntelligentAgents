@@ -22,7 +22,7 @@ import model.Solution;
 
 public class SLS {
 
-	static List<Plan> sls(List<Vehicle> vehicles, TaskSet tasks, double pThreshold) {
+	static Solution sls(List<Vehicle> vehicles, TaskSet tasks, double pThreshold) {
 		Solution A = new Solution();
 		Solution Aold;
 		List<Integer> ids = new LinkedList<Integer>();
@@ -78,10 +78,10 @@ public class SLS {
 					
 				}
 			}
-			System.out.println("Cost " + A.cost());
+//			System.out.println("Cost " + A.cost());
 		}
 
-		return solutionToPlans(A);
+		return A;
 	}
 
 	private static void randomlyDistributeTasks(List<Vehicle> vehicles,
@@ -219,7 +219,7 @@ public class SLS {
 
 	}
 
-	private static List<Plan> solutionToPlans(Solution solution) {
+	 static List<Plan> solutionToPlans(Solution solution) {
 		List<Plan> result = new ArrayList<Plan>();
 		for (List<ActionWrapper> entry : solution.getSolution().values()) {
 			Plan p = null;

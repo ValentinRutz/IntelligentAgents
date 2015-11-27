@@ -63,7 +63,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
     public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
         long time_start = System.currentTimeMillis();
         double p = 0.5;
-        List<Plan> plans= SLS.sls(vehicles, tasks, p);
+        List<Plan> plans= SLS.solutionToPlans(SLS.sls(vehicles, tasks, p));
        // for(double p=0.1; p<=1; p+=0.1 ){
        //  plans = SLS.sls(vehicles, tasks, p);
        // }
