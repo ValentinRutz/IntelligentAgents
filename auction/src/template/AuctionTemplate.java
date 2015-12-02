@@ -30,8 +30,8 @@ public class AuctionTemplate implements AuctionBehavior {
 	private TaskDistribution distribution;
 	private Agent agent;
 	private Random random;
-	private Vehicle vehicle;
-	private City currentCity;
+	//private Vehicle vehicle;
+	//private City currentCity;
 	private ArrayList<Task> wonSoFar;
 	private ArrayList<Task> universe;
 
@@ -46,12 +46,8 @@ public class AuctionTemplate implements AuctionBehavior {
 		this.topology = topology;
 		this.distribution = distribution;
 		this.agent = agent;
-		this.vehicle = agent.vehicles().get(0);
-		this.currentCity = vehicle.homeCity();
-
-		long seed = -9019554669489983951L * currentCity.hashCode() * agent.id();
-		this.random = new Random(seed);
-
+	
+	
 		firstTime = true;
 		currentCost = 0;
 		wonSoFar = new ArrayList<>();
@@ -61,7 +57,6 @@ public class AuctionTemplate implements AuctionBehavior {
 	@Override
 	public void auctionResult(Task previous, int winner, Long[] bids) {
 		if (winner == agent.id()) {
-			currentCity = previous.deliveryCity;
 			wonSoFar.add(previous);
 			
 			currentCost = tmpCost;
@@ -72,9 +67,14 @@ public class AuctionTemplate implements AuctionBehavior {
 	@Override
 	public Long askPrice(Task task) {
 
-		if (vehicle.capacity() < task.weight)
-			return null;
+		boolean cantakeit = false;
+		for (Vehicle v : agent.vehicles()) {
+			if (v.capacity() >= task.weight)
+				cantakeit=true;
 
+		}
+		if(!cantakeit) return null;
+		
 		System.out.println(task.id);
 
 		universe.add(task);
@@ -97,7 +97,33 @@ public class AuctionTemplate implements AuctionBehavior {
 		System.out.println("Won so far " + wonSoFar.size());
 		
 		double marginalCost = tmpCost - currentCost;
-		return (long)Math.ceil(marginalCost)+1;
+		
+		double futureProb = 0.0;
+		
+	//	futureProb = distribution.probability(currentCity, task.pickupCity);
+		for (Vehicle v : agent.vehicles()) {
+			double p = distribution.probability(v.getCurrentCity(), task.pickupCity);
+			futureProb = Math.max(futureProb,p);
+		}
+		
+		for (Task t : wonSoFar) {
+			double p1 = distribution.probability(t.deliveryCity, task.pickupCity);
+			double p2 = distribution.probability(task.deliveryCity,t.pickupCity);
+			
+			futureProb = Math.max(futureProb,p1);
+			futureProb = Math.max(futureProb,p2);
+						
+		}
+		
+		
+		
+		double futureFactor = (1.0/5.0 - futureProb)*0.5*marginalCost;
+		System.out.println("Future prob " + futureProb);
+		
+		long bid = (long) (marginalCost + futureFactor);
+		
+		System.out.println("Future factor "+ futureFactor);
+		return bid;
 	}
 
 	@Override

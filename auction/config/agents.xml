@@ -4,9 +4,19 @@
 	<!-- A list of agents and their behavior classes -->
 	
 	<!-- #### AUCTION AGENTS ### -->
-	<agent name="auction-random">
+	<agent name="auction-a-bit-smarter">
 		<set class-path="bin/"/>
 		<set class-name="template.AuctionTemplate"/>
+	</agent>
+	
+		<agent name="auction-random">
+		<set class-path="bin/"/>
+		<set class-name="template.DummySolution"/>
+	</agent>
+	
+	<agent name="auction-marginal">
+		<set class-path="bin/"/>
+		<set class-name="template.MarginalCost"/>
 	</agent>
 	
 </agents>
