@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import logist.simulation.Vehicle;
+import logist.task.Task;
 import logist.topology.Topology.City;
 
 public class Solution {
@@ -24,7 +25,8 @@ public class Solution {
 
 	public Solution(Solution otherSolution) {
 		setSolution(new HashMap<Integer, List<ActionWrapper>>());
-		for (Map.Entry<Integer, List<ActionWrapper>> entry : otherSolution.entrySet()) {
+		for (Map.Entry<Integer, List<ActionWrapper>> entry : otherSolution
+				.entrySet()) {
 			List<ActionWrapper> tmpL = new LinkedList<ActionWrapper>();
 			Map<Integer, ActionWrapper> added = new HashMap<Integer, ActionWrapper>();
 
@@ -35,7 +37,8 @@ public class Solution {
 		}
 
 		setTime(new HashMap<ActionWrapper, Integer>());
-		for (Map.Entry<ActionWrapper, Integer> entry : otherSolution.time.entrySet()) {
+		for (Map.Entry<ActionWrapper, Integer> entry : otherSolution.time
+				.entrySet()) {
 			time.put(entry.getKey(), entry.getValue().intValue());
 		}
 
@@ -78,6 +81,50 @@ public class Solution {
 		return remainingCapacity;
 	}
 
+	public ActionWrapper previousDelivery(Task t) {
+		
+		
+		ActionWrapper p = new PickupWrapper(t);
+		
+		Vehicle v = vehicle.get(p);
+		
+		Integer pickupTime = time.get(p);
+		int deliveryTime = 0;
+		ActionWrapper previousDelivery = null;
+
+		for (ActionWrapper a : solution.get(v.id())) {
+			int tmpTime = time.get(a.getDelivery());
+			if (tmpTime < pickupTime && tmpTime > deliveryTime) {
+				deliveryTime = tmpTime;
+				previousDelivery = a.getDelivery();
+			}
+		}
+
+		return previousDelivery;
+	}
+
+	public ActionWrapper nextPickUp(Task t) {
+
+		ActionWrapper p = new PickupWrapper(t);
+		ActionWrapper d = p.getCounterpart();
+
+		Vehicle v = vehicle.get(p);
+		int deliveryTime = time.get(d);
+		
+		int pickupTime = time.size();
+		ActionWrapper nextPickup = null;
+
+		for (ActionWrapper a : solution.get(v.id())) {
+			int tmpTime = time.get(a.getPickup());
+			if (tmpTime > deliveryTime && tmpTime < pickupTime) {
+				pickupTime = tmpTime;
+				nextPickup = a.getPickup();
+			}
+		}
+
+		return nextPickup;
+	}
+
 	public int getTime(ActionWrapper aw) {
 		return time.get(aw).intValue();
 	}
@@ -110,7 +157,8 @@ public class Solution {
 		this.vehicle = vehicle;
 	}
 
-	public boolean changeTasksOrder(int vehicleID, int firstTaskInd, int secondTaskInd) {
+	public boolean changeTasksOrder(int vehicleID, int firstTaskInd,
+			int secondTaskInd) {
 		List<ActionWrapper> oldList = solution.get(vehicleID);
 
 		List<ActionWrapper> newList = new LinkedList<ActionWrapper>();
@@ -119,7 +167,8 @@ public class Solution {
 		ActionWrapper t2 = oldList.get(secondTaskInd);
 
 		int i = 0;
-		for (Iterator<ActionWrapper> iterator = oldList.iterator(); iterator.hasNext();) {
+		for (Iterator<ActionWrapper> iterator = oldList.iterator(); iterator
+				.hasNext();) {
 			ActionWrapper actionWrapper = iterator.next();
 			if (i == firstTaskInd) {
 				newList.add(t2);
@@ -149,20 +198,21 @@ public class Solution {
 		return true;
 	}
 
-	public boolean changeTaskVehicle(Vehicle vehicle0, Vehicle vehicle1, int taskInd) {
+	public boolean changeTaskVehicle(Vehicle vehicle0, Vehicle vehicle1,
+			int taskInd) {
 		int vehicleID0 = vehicle0.id(), vehicleID1 = vehicle1.id();
 		List<ActionWrapper> vehicle0Solution = solution.get(vehicleID0);
 		if (vehicle0Solution.size() < 2) {
-//			System.out.println("Not enough tasks to transfer");
+			// System.out.println("Not enough tasks to transfer");
 			return false;
 		}
-		
+
 		ActionWrapper pw = vehicle0Solution.remove(taskInd).getPickup();
 		ActionWrapper dw = pw.getCounterpart();
 		if (!vehicle0Solution.remove(dw)) {
 			return false;
 		}
-		
+
 		// Update time in vehicle0Solution
 		int i = 1;
 		for (ActionWrapper aw : vehicle0Solution) {
@@ -171,13 +221,16 @@ public class Solution {
 
 		List<ActionWrapper> vehicle1Solution = solution.get(vehicleID1);
 
-		if (!Constraints.testCapacity(vehicle1, pw, this) || !vehicle1Solution.add(pw)) {
-//			System.out.println("vehicle "+ vehicleID1 +" cannot add pickup");
+		if (!Constraints.testCapacity(vehicle1, pw, this)
+				|| !vehicle1Solution.add(pw)) {
+			// System.out.println("vehicle "+ vehicleID1 +" cannot add pickup");
 			return false;
 		}
 
-		if (!Constraints.testCapacity(vehicle1, dw, this) || !vehicle1Solution.add(dw)) {
-//			System.out.println("vehicle "+ vehicleID1 +" cannot add delivery");
+		if (!Constraints.testCapacity(vehicle1, dw, this)
+				|| !vehicle1Solution.add(dw)) {
+			// System.out.println("vehicle "+ vehicleID1
+			// +" cannot add delivery");
 			return false;
 		}
 
@@ -186,9 +239,11 @@ public class Solution {
 		vehicle.put(pw, vehicle1);
 		vehicle.put(dw, vehicle1);
 
-		if (!(Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID1, this)
-				&& Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(vehicleID0, this)
-				&& Constraints.testPickupBeforeDelivery(pw, this))) {
+		if (!(Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(
+				vehicleID1, this)
+				&& Constraints.testFirstTaskHasTimeOneAndVehicleIsConsistent(
+						vehicleID0, this) && Constraints
+					.testPickupBeforeDelivery(pw, this))) {
 			return false;
 		}
 
@@ -209,9 +264,9 @@ public class Solution {
 						next = actionWrapper.getCity();
 						kms += current.distanceTo(next);
 						current = next;
-	
+
 					}
-	
+
 					cost += kms * costPerKm;
 				}
 			}

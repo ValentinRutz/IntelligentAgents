@@ -38,4 +38,11 @@ public class DeliveryWrapper extends ActionWrapper {
 	public ActionWrapper getPickup() {
 		return getCounterpart();
 	}
+
+	@Override
+	public ActionWrapper getDelivery() {
+		return this;
+	}
+	
+	
 }

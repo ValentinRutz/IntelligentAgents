@@ -16,6 +16,8 @@ import logist.task.TaskDistribution;
 import logist.task.TaskSet;
 import logist.topology.Topology;
 import logist.topology.Topology.City;
+import model.ActionWrapper;
+import model.Solution;
 import template.SLS;
 
 /**
@@ -90,7 +92,8 @@ public class AuctionTemplate implements AuctionBehavior {
 		
 		empty.add(task);
 			
-		tmpCost = SLS.sls(agent.vehicles(), empty, 0.5).cost();
+		Solution s = SLS.sls(agent.vehicles(), empty, 0.5);
+		tmpCost = s.cost();
 				
 	//	System.out.println("Tmpcost " + tmpCost);
 	//	System.out.println("Curr cost "+ currentCost);
@@ -99,29 +102,27 @@ public class AuctionTemplate implements AuctionBehavior {
 		double marginalCost = tmpCost - currentCost;
 		
 		double futureProb = 0.0;
+		double futureFactor = 0.0; 
 		
 	//	futureProb = distribution.probability(currentCity, task.pickupCity);
-		for (Vehicle v : agent.vehicles()) {
-			double p = distribution.probability(v.getCurrentCity(), task.pickupCity);
-			futureProb = Math.max(futureProb,p);
+		if(task.id > 0){
+		ActionWrapper a = s.previousDelivery(task);
+		if(a!=null){
+			futureProb = Math.max(distribution.probability(a.getCity(),task.pickupCity),futureProb);
+
 		}
 		
-		for (Task t : wonSoFar) {
-			double p1 = distribution.probability(t.deliveryCity, task.pickupCity);
-			double p2 = distribution.probability(task.deliveryCity,t.pickupCity);
-			
-			futureProb = Math.max(futureProb,p1);
-			futureProb = Math.max(futureProb,p2);
-						
+		 a = s.nextPickUp(task);
+		if(a!=null){
+			futureProb = Math.max(distribution.probability(task.deliveryCity,a.getCity()),futureProb);
 		}
-		
-		
-		
-		double futureFactor = (1.0/5.0 - futureProb)*0.5*marginalCost;
-		System.out.println("Future prob " + futureProb);
+	
+		double f = 1.0/5.0;
+		futureFactor = (f - futureProb)*0.3*marginalCost;
+		}
 		
 		long bid = (long) (marginalCost + futureFactor);
-		
+		System.out.println("Future prob " + futureProb);
 		System.out.println("Future factor "+ futureFactor);
 		return bid;
 	}

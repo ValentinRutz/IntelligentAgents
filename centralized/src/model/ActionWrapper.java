@@ -64,13 +64,15 @@ public abstract class ActionWrapper {
 	}
 	
 	public abstract ActionWrapper getPickup();
+	public abstract ActionWrapper getDelivery();
+
 	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ID;
-		result = prime * result + ((action == null) ? 0 : action.hashCode());
+		result = prime * result + ((this==getPickup()) ? 0 : 1);
 		return result;
 	}
 
@@ -85,11 +87,7 @@ public abstract class ActionWrapper {
 		ActionWrapper other = (ActionWrapper) obj;
 		if (ID != other.ID)
 			return false;
-		if (action == null) {
-			if (other.action != null)
-				return false;
-		} else if (!action.equals(other.action))
-			return false;
-		return true;
+
+		return (this==getPickup() && other==other.getPickup()) || (this==getDelivery() && other==other.getDelivery());
 	}
 }
