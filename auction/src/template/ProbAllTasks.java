@@ -35,6 +35,7 @@ public class ProbAllTasks implements AuctionBehavior {
 	private ArrayList<Task> wonSoFar;
 	private ArrayList<Task> universe;
 
+	private double moneySoFar;
 	private double currentCost;
 	private double tmpCost;
 	private boolean firstTime;
@@ -47,7 +48,7 @@ public class ProbAllTasks implements AuctionBehavior {
 		this.distribution = distribution;
 		this.agent = agent;
 	
-	
+		moneySoFar = 0;
 		firstTime = true;
 		currentCost = 0;
 		wonSoFar = new ArrayList<>();
@@ -58,10 +59,12 @@ public class ProbAllTasks implements AuctionBehavior {
 	public void auctionResult(Task previous, int winner, Long[] bids) {
 		if (winner == agent.id()) {
 			wonSoFar.add(previous);
-			
+			moneySoFar+=bids[agent.id()];
 			currentCost = tmpCost;
 
 		}
+		System.out.print((moneySoFar - currentCost) + "\t" );
+
 	}
 
 	@Override

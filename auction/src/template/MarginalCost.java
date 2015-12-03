@@ -36,6 +36,7 @@ public class MarginalCost implements AuctionBehavior {
 	private ArrayList<Task> universe;
 
 	private double currentCost;
+	private double moneySoFar;
 	private double tmpCost;
 	private boolean firstTime;
 
@@ -54,6 +55,7 @@ public class MarginalCost implements AuctionBehavior {
 
 		firstTime = true;
 		currentCost = 0;
+		moneySoFar = 0;
 		wonSoFar = new ArrayList<>();
 		universe = new ArrayList<>();
 	}
@@ -63,10 +65,13 @@ public class MarginalCost implements AuctionBehavior {
 		if (winner == agent.id()) {
 			currentCity = previous.deliveryCity;
 			wonSoFar.add(previous);
-			
+			moneySoFar += bids[agent.id()];
 			currentCost = tmpCost;
 
 		}
+		
+		System.out.print((moneySoFar - currentCost) + "\t" );
+
 	}
 
 	@Override
