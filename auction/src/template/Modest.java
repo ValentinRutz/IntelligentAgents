@@ -24,7 +24,7 @@ import template.SLS;
  * 
  */
 @SuppressWarnings("unused")
-public class ProbAllTasks implements AuctionBehavior {
+public class Modest implements AuctionBehavior {
 
 	private Topology topology;
 	private TaskDistribution distribution;
@@ -64,7 +64,6 @@ public class ProbAllTasks implements AuctionBehavior {
 
 		}
 		System.out.print((moneySoFar - currentCost) + "\t" );
-
 	}
 
 	@Override
@@ -120,7 +119,7 @@ public class ProbAllTasks implements AuctionBehavior {
 		
 		
 		
-		double futureFactor = (1.0/5.0 - futureProb)*0.5*marginalCost;
+		double futureFactor = (0.2 - futureProb)*0.3*marginalCost;
 		
 		long bid = (long) (marginalCost + futureFactor);
 		

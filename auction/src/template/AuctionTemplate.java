@@ -45,6 +45,8 @@ public class AuctionTemplate implements AuctionBehavior {
 	private List<Plan> planSoFar;
 	private double otherBids;
 	private double sumMarginalCost;
+	
+	private double winningBids;
 
 	@Override
 	public void setup(Topology topology, TaskDistribution distribution,
@@ -60,6 +62,7 @@ public class AuctionTemplate implements AuctionBehavior {
 		universe = new ArrayList<>();
 		otherBids = 0;
 		sumMarginalCost = 0;
+		winningBids=0;
 	}
 
 	@Override
@@ -74,7 +77,7 @@ public class AuctionTemplate implements AuctionBehavior {
 		} else {
 			otherBids += bids[winner];
 		}
-
+		winningBids+=bids[winner];
 		System.out.print((moneySoFar - costSoFar) + "\t" );
 	}
 
@@ -117,37 +120,24 @@ public class AuctionTemplate implements AuctionBehavior {
 		if (marginalCost < 0)
 			marginalCost = 0;
 
-		double futureProb = 0.0;
 		double futureFactor = 0.0;
 
 		// futureProb = distribution.probability(currentCity, task.pickupCity);
 		if (wonSoFar.size() > 0) {
-			ActionWrapper a = tmpSolution.previousDelivery(task);
-			if (a != null) {
-				futureProb = Math.max(
-						distribution.probability(a.getCity(), task.pickupCity),
-						futureProb);
-
-			}
-
-			a = tmpSolution.nextPickUp(task);
-			if (a != null) {
-				futureProb = Math.max(distribution.probability(
-						task.deliveryCity, a.getCity()), futureProb);
-			}
-
+			
+			double prob = probabilityEstimate(task);
 			double f = 0.2;
 
 			double profit = moneySoFar - costSoFar;
 			if (profit < 0) {
-				futureFactor = (f - futureProb) * (task.id / 10.0) * (-1)
+				futureFactor = (f - prob) * (task.id / 10.0) * (-1)
 						* profit;
 			} else
-				futureFactor = (f - futureProb) * (task.id / 10.0)
-						* sumMarginalCost / universe.size();
+				futureFactor = (f - prob) * winningBids / (universe.size()-1);
 
-		} else if (otherBids > 0) {
-			marginalCost = otherBids / (universe.size() - 1 - wonSoFar.size());
+		} else if (winningBids > 0) {
+			double bidsAverage = winningBids / (universe.size() - 1);
+			marginalCost *= (bidsAverage/marginalCost); 
 
 		} else
 			marginalCost *= 0.66;
@@ -160,6 +150,24 @@ public class AuctionTemplate implements AuctionBehavior {
 		return bid;
 	}
 
+	private double probabilityEstimate(Task task){
+		double futureProb = 0;
+		ActionWrapper a = tmpSolution.previousDelivery(task);
+		if (a != null) {
+			futureProb = Math.max(
+					distribution.probability(a.getCity(), task.pickupCity),
+					futureProb);
+
+		}
+		a = tmpSolution.nextPickUp(task);
+		if (a != null) {
+			futureProb = Math.max(distribution.probability(
+					task.deliveryCity, a.getCity()), futureProb);
+		}
+		
+		return futureProb;
+	}
+	
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
 

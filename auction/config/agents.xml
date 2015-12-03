@@ -4,7 +4,7 @@
 	<!-- A list of agents and their behavior classes -->
 	
 	<!-- #### AUCTION AGENTS ### -->
-	<agent name="auction-a-bit-smarter">
+	<agent name="auction-risky">
 		<set class-path="bin/"/>
 		<set class-name="template.AuctionTemplate"/>
 	</agent>
@@ -17,6 +17,12 @@
 	<agent name="auction-marginal">
 		<set class-path="bin/"/>
 		<set class-name="template.MarginalCost"/>
+	</agent>
+	
+
+	<agent name="auction-modest">
+		<set class-path="/home/ana/manasovska-rutz-ex5.jar/"/>
+		<set class-name="template.Modest"/>
 	</agent>
 	
 </agents>

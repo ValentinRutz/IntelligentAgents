@@ -22,7 +22,7 @@ import model.Solution;
 
 public class SLS {
 
-	static Solution sls(List<Vehicle> vehicles, TaskSet tasks, double pThreshold) {
+	public static Solution sls(List<Vehicle> vehicles, TaskSet tasks, double pThreshold) {
 		Solution A = new Solution();
 		Solution Aold;
 		List<Integer> ids = new LinkedList<Integer>();
@@ -219,7 +219,7 @@ public class SLS {
 
 	}
 
-	 static List<Plan> solutionToPlans(Solution solution) {
+	 public static List<Plan> solutionToPlans(Solution solution) {
 		List<Plan> result = new ArrayList<Plan>();
 		for (List<ActionWrapper> entry : solution.getSolution().values()) {
 			Plan p = null;
